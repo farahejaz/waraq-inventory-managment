@@ -1,0 +1,25 @@
+# render.yaml — Render deployment config for AK Copy House Multan backend
+# Docs: https://render.com/docs/render-yaml-spec
+
+services:
+  - type: web
+    name: ak-copy-house-backend
+    runtime: node
+    region: oregon   # choose closest to your users
+    plan: free       # zero cost
+
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+
+    healthCheckPath: /health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false        # fill this in the Render dashboard
+      - key: SESSION_SECRET
+        generateValue: true  # Render auto-generates a secure secret
+      - key: FRONTEND_URL
+        sync: false        # fill this in the Render dashboard after Vercel deploy

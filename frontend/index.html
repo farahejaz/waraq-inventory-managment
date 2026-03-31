@@ -1,0 +1,2435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AK Copy House Multan — Business Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg:       #0c1017;
+  --surface:  #131923;
+  --card:     #1a2235;
+  --border:   #253047;
+  --amber:    #f59e0b;
+  --amber-dim:#7c5100;
+  --blue:     #3b82f6;
+  --green:    #10b981;
+  --red:      #ef4444;
+  --purple:   #a855f7;
+  --text:     #e2e8f0;
+  --muted:    #64748b;
+  --light:    #94a3b8;
+  --font:     'Sora', sans-serif;
+  --mono:     'JetBrains Mono', monospace;
+  --radius:   10px;
+  --shadow:   0 4px 24px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;overflow-x:hidden;}
+#menu-toggle{display:none;background:none;border:none;cursor:pointer;color:var(--text);font-size:22px;line-height:1;padding:4px;flex-shrink:0;}
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99;backdrop-filter:blur(2px);}
+#sidebar{width:230px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .28s cubic-bezier(.4,0,.2,1);}
+.brand{padding:16px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.brand-logo{width:38px;height:38px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#000;letter-spacing:-1px;flex-shrink:0;}
+.brand-text h1{font-size:15px;font-weight:800;color:var(--amber);letter-spacing:-0.3px;line-height:1.2;}
+.brand-text p{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:1px;text-transform:uppercase;}
+nav{flex:1;padding:12px 0;overflow-y:auto;}
+.nav-group{margin-bottom:4px;}
+.nav-label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);padding:8px 18px 4px;}
+nav a{display:flex;align-items:center;gap:10px;padding:9px 18px;color:var(--light);text-decoration:none;font-size:13px;font-weight:500;transition:.15s;cursor:pointer;border-left:3px solid transparent;}
+nav a:hover{color:var(--text);background:rgba(255,255,255,0.04);}
+nav a.active{color:var(--amber);background:rgba(245,158,11,0.08);border-left-color:var(--amber);}
+nav a .ico{font-size:15px;width:20px;text-align:center;}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);}
+#main{margin-left:230px;flex:1;min-height:100vh;display:flex;flex-direction:column;min-width:0;}
+#topbar{height:56px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;background:var(--surface);position:sticky;top:0;z-index:50;}
+#topbar h2{font-size:16px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#topbar .badge{background:rgba(245,158,11,0.15);color:var(--amber);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap;}
+#content{padding:24px;flex:1;}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;cursor:pointer;transition:.15s;}
+.kpi:hover{border-color:var(--amber);transform:translateY(-1px);}
+.kpi::before{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;opacity:0.08;transform:translate(20px,-20px);}
+.kpi.amber::before{background:var(--amber);}
+.kpi.blue::before{background:var(--blue);}
+.kpi.green::before{background:var(--green);}
+.kpi.red::before{background:var(--red);}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;}
+.kpi-val{font-family:var(--mono);font-size:22px;font-weight:600;}
+.kpi.amber .kpi-val{color:var(--amber);}
+.kpi.blue .kpi-val{color:var(--blue);}
+.kpi.green .kpi-val{color:var(--green);}
+.kpi.red .kpi-val{color:var(--red);}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:6px;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.section-header h3{font-size:15px;font-weight:700;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.card-header h4{font-size:14px;font-weight:600;}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;min-width:480px;}
+th{background:rgba(255,255,255,0.03);padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.02);}
+.num{font-family:var(--mono);font-size:13px;}
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap;}
+.tag.green{background:rgba(16,185,129,0.15);color:var(--green);}
+.tag.red{background:rgba(239,68,68,0.15);color:var(--red);}
+.tag.amber{background:rgba(245,158,11,0.15);color:var(--amber);}
+.tag.blue{background:rgba(59,130,246,0.15);color:var(--blue);}
+.tag.purple{background:rgba(168,85,247,0.15);color:var(--purple);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;transition:.15s;white-space:nowrap;}
+.btn-primary{background:var(--amber);color:#000;}
+.btn-primary:hover{background:#fbbf24;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--light);}
+.btn-outline:hover{border-color:var(--amber);color:var(--amber);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.btn-danger{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);}
+.btn-danger:hover{background:rgba(239,68,68,0.25);}
+.btn-success{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
+.btn-success:hover{background:rgba(16,185,129,0.25);}
+.btn-info{background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.3);}
+.btn-info:hover{background:rgba(59,130,246,0.25);}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:12px 12px 0 0;width:100%;max-width:680px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);}
+.modal-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:1;}
+.modal-header h3{font-size:15px;font-weight:700;}
+.modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:4px;}
+.modal-close:hover{color:var(--text);}
+.modal-body{padding:20px;}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;position:sticky;bottom:0;background:var(--card);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid.single{grid-template-columns:1fr;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group.full{grid-column:1/-1;}
+label{font-size:12px;font-weight:600;color:var(--light);text-transform:uppercase;letter-spacing:.5px;}
+input,select,textarea{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-family:var(--font);font-size:14px;transition:.15s;width:100%;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,0.1);}
+textarea{resize:vertical;min-height:80px;}
+select option{background:var(--card);}
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;line-height:1.5;}
+.alert.info{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:#93c5fd;}
+.alert.warning{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;}
+.alert.danger{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;}
+.alert.success{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7;}
+.ledger-header{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;}
+.ledger-stat{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
+.ledger-stat .ls-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.ledger-stat .ls-val{font-family:var(--mono);font-size:18px;font-weight:600;margin-top:4px;}
+.stock-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px;}
+.stock-bar-fill{height:100%;border-radius:3px;transition:.3s;}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty .empty-icon{font-size:36px;margin-bottom:12px;}
+.empty p{font-size:14px;}
+#toast{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:300px;}
+.toast-msg{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:11px 16px;font-size:13px;box-shadow:var(--shadow);animation:slideIn .2s ease;word-break:break-word;}
+.toast-msg.success{border-left:3px solid var(--green);}
+.toast-msg.error{border-left:3px solid var(--red);}
+.toast-msg.info{border-left:3px solid var(--blue);}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.flex{display:flex;}.items-center{align-items:center;}.gap-10{gap:10px;}.gap-16{gap:16px;}
+.text-muted{color:var(--muted);}.text-green{color:var(--green);}.text-red{color:var(--red);}
+.text-amber{color:var(--amber);}.mt-8{margin-top:8px;}.mt-16{margin-top:16px;}.mb-16{margin-bottom:16px;}
+.w-full{width:100%;}.text-right{text-align:right;}.font-bold{font-weight:700;}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.action-row{display:flex;gap:6px;flex-wrap:wrap;}
+.item-rows{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:8px;}
+.item-row-header{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 32px;gap:8px;padding:8px 12px;background:rgba(255,255,255,0.03);font-size:11px;text-transform:uppercase;color:var(--muted);}
+.item-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 32px;gap:8px;padding:8px 12px;border-top:1px solid var(--border);align-items:center;}
+.item-row input,.item-row select{padding:6px 8px;font-size:12px;}
+.remove-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0;line-height:1;}
+.total-row{padding:10px 12px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;align-items:center;gap:16px;font-weight:600;}
+.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);}
+.filter-bar input,.filter-bar select{padding:7px 10px;font-size:13px;width:auto;flex:1;min-width:130px;}
+.id-badge{font-family:var(--mono);font-size:11px;background:rgba(245,158,11,0.1);color:var(--amber);padding:2px 7px;border-radius:6px;white-space:nowrap;}
+.print-area{display:none;}
+@media print{
+  .print-area{display:block;}
+  body > *:not(.print-area){display:none !important;}
+}
+
+/* Bill print */
+.bill-print{font-family:'Sora',sans-serif;max-width:700px;margin:0 auto;padding:24px;color:#111;}
+.bill-print .bh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;border-bottom:2px solid #111;padding-bottom:14px;}
+.bill-print .bh h1{font-size:22px;font-weight:900;color:#111;}
+.bill-print .bh p{font-size:11px;color:#555;margin-top:2px;}
+.bill-print table{width:100%;border-collapse:collapse;margin:14px 0;}
+.bill-print th{background:#f3f4f6;padding:8px 12px;text-align:left;font-size:12px;font-weight:700;border:1px solid #ddd;}
+.bill-print td{padding:8px 12px;font-size:13px;border:1px solid #ddd;}
+.bill-print .btotal{text-align:right;margin-top:10px;font-size:14px;}
+.bill-print .bfooter{margin-top:20px;border-top:1px solid #ddd;padding-top:12px;font-size:11px;color:#777;text-align:center;}
+
+/* Salary section */
+.salary-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+
+@media(max-width:1024px){
+  #sidebar{transform:translateX(-100%);}
+  #sidebar.open{transform:translateX(0);}
+  #sidebar-overlay.open{display:block;}
+  #menu-toggle{display:flex;}
+  #main{margin-left:0;}
+  #content{padding:18px;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
+  #topbar{padding:0 16px;gap:8px;}
+  #topbar h2{font-size:15px;}
+}
+@media(max-width:640px){
+  #content{padding:12px;}
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:10px;}
+  .kpi{padding:14px;}
+  .kpi-val{font-size:18px;}
+  .kpi-label{font-size:10px;}
+  .kpi-sub{display:none;}
+  .form-grid{grid-template-columns:1fr;}
+  .form-group.full{grid-column:1;}
+  .ledger-header{grid-template-columns:1fr;}
+  .salary-summary{grid-template-columns:1fr;}
+  .section-header{flex-direction:column;align-items:flex-start;}
+  .card-header{flex-direction:column;align-items:flex-start;}
+  th,td{padding:8px 10px;font-size:12px;}
+  .action-row{flex-direction:column;}
+  .action-row .btn{width:100%;justify-content:center;}
+  .modal{border-radius:16px 16px 0 0;max-height:88vh;}
+  .modal-footer{flex-direction:column;}
+  .modal-footer .btn{width:100%;justify-content:center;}
+  .item-row-header{display:none;}
+  .item-row{grid-template-columns:1fr 1fr;row-gap:8px;}
+  .item-row select{grid-column:1/-1;}
+  #toast{right:10px;left:10px;max-width:none;bottom:16px;}
+  @keyframes slideIn{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+  #topbar{padding:0 12px;height:50px;gap:8px;}
+  #topbar h2{font-size:14px;}
+  #topbar .badge{display:none;}
+  #user-badge{display:none;}
+  .btn-topbar-text{display:none;}
+}
+@media(max-width:380px){
+  .kpi-grid{grid-template-columns:1fr;}
+  .kpi-val{font-size:20px;}
+}
+.grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid-3col-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+@media(max-width:1024px){.grid-2col{grid-template-columns:1fr;}.grid-3col-kpi{grid-template-columns:1fr 1fr;}}
+@media(max-width:640px){.grid-3col-kpi{grid-template-columns:1fr;}.detail-grid{grid-template-columns:1fr;}.grid-2col{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div id="app-loading" style="display:none;position:fixed;inset:0;background:#0c1017;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div style="width:42px;height:42px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#000;">AK</div>
+    <div>
+      <div style="font-size:18px;font-weight:800;color:#f59e0b;letter-spacing:-0.5px;">AK Copy House</div>
+      <div style="font-size:10px;color:#64748b;letter-spacing:1px;text-transform:uppercase;">Multan</div>
+    </div>
+  </div>
+  <div style="color:#64748b;font-size:13px;">Loading your data…</div>
+  <div style="width:200px;height:3px;background:#1a2235;border-radius:3px;overflow:hidden;">
+    <div style="height:100%;width:60%;background:#f59e0b;border-radius:3px;animation:loadbar 1.2s ease-in-out infinite alternate;"></div>
+  </div>
+</div>
+<style>@keyframes loadbar{from{transform:translateX(-100%)}to{transform:translateX(200%)}}</style>
+
+<!-- Login -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:#0c1017;z-index:9998;align-items:center;justify-content:center;">
+  <div style="background:#1a2235;border:1px solid #253047;border-radius:16px;padding:40px;width:400px;max-width:95vw;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="width:48px;height:48px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#000;">AK</div>
+        <div style="text-align:left;">
+          <div style="font-size:20px;font-weight:800;color:#f59e0b;letter-spacing:-0.5px;">AK Copy House</div>
+          <div style="font-size:10px;color:#64748b;letter-spacing:1px;text-transform:uppercase;">Multan — Business Manager</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8;display:block;margin-bottom:6px;">Username</label>
+        <input id="login-user" type="text" placeholder="admin" autocomplete="username" style="width:100%;background:#0c1017;border:1px solid #253047;color:#e2e8f0;padding:10px 14px;border-radius:8px;font-size:14px;font-family:inherit;">
+      </div>
+      <div>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8;display:block;margin-bottom:6px;">Password</label>
+        <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" style="width:100%;background:#0c1017;border:1px solid #253047;color:#e2e8f0;padding:10px 14px;border-radius:8px;font-size:14px;font-family:inherit;">
+      </div>
+      <div id="login-err" style="color:#ef4444;font-size:13px;min-height:18px;"></div>
+      <button id="login-btn" onclick="doLogin()" style="background:#f59e0b;color:#000;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;">Sign In</button>
+    </div>
+    <div style="text-align:center;margin-top:20px;font-size:11px;color:#475569;">Default: admin / admin123 — change after first login</div>
+  </div>
+</div>
+
+<!-- App Shell -->
+<div id="app-shell" style="display:flex;width:100%;min-height:100vh;">
+<aside id="sidebar">
+  <div class="brand">
+    <div class="brand-logo">AK</div>
+    <div class="brand-text">
+      <h1>AK Copy House</h1>
+      <p>Multan</p>
+    </div>
+  </div>
+  <nav id="nav">
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <a onclick="navigate('dashboard')" class="active"><span class="ico">📊</span> Dashboard</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Parties</div>
+      <a onclick="navigate('suppliers')"><span class="ico">🏭</span> Suppliers</a>
+      <a onclick="navigate('customers')"><span class="ico">🏫</span> Customers</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Inventory</div>
+      <a onclick="navigate('rawmaterials')"><span class="ico">📦</span> Raw Materials</a>
+      <a onclick="navigate('products')"><span class="ico">📓</span> Products</a>
+      <a onclick="navigate('production')"><span class="ico">⚙️</span> Production</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Transactions</div>
+      <a onclick="navigate('purchases')"><span class="ico">🛒</span> Purchases</a>
+      <a onclick="navigate('sales')"><span class="ico">💸</span> Sales</a>
+      <a onclick="navigate('cashflow')"><span class="ico">💰</span> Cash Flow</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">HR</div>
+      <a onclick="navigate('salaries')"><span class="ico">👷</span> Salaries</a>
+      <a onclick="navigate('dailyexpenses')"><span class="ico">🧾</span> Daily Expenses</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Reports</div>
+      <a onclick="navigate('reports')"><span class="ico">📈</span> Reports</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">AK Copy House Multan &copy; 2025</div>
+</aside>
+
+<div id="main">
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div id="topbar">
+    <button id="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+    <h2 id="page-title">Dashboard</h2>
+    <span class="badge" id="page-badge">Overview</span>
+    <button class="btn btn-primary btn-sm" onclick="openQuickSale()">+ New Sale</button>
+    <button class="btn btn-outline btn-sm" onclick="exportData()">⬇ <span class="btn-topbar-text">Export</span></button>
+    <span id="user-badge" style="font-size:11px;color:var(--muted);padding:3px 10px;background:rgba(255,255,255,0.05);border-radius:20px;"></span>
+    <button class="btn btn-danger btn-sm" onclick="doLogout()" style="padding:5px 12px;font-size:12px;">Logout</button>
+  </div>
+  <div id="content"></div>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Title</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div class="print-area" id="print-area"></div>
+
+<script>
+// ==================== CONFIG ====================
+const API_BASE = window.WARAQ_API_BASE || 'https://YOUR-RENDER-URL.onrender.com';
+
+// ==================== DATA LAYER ====================
+const DB = {
+  _cache: {},
+  async init() {
+    const collections = ['suppliers','customers','rawmaterials','products',
+                         'purchases','sales','production','cashflow','salaries','dailyexpenses'];
+    const results = await Promise.all(
+      collections.map(k =>
+        fetch(API_BASE + '/api/' + k, { credentials: 'include' }).then(r => r.json()).catch(() => [])
+      )
+    );
+    collections.forEach((k, i) => { this._cache[k] = results[i] || []; });
+  },
+  get(k) { return this._cache[k] || []; },
+  set(k, v) {
+    this._cache[k] = v;
+    fetch(API_BASE + '/api/' + k + '/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(v)
+    }).catch(err => console.error('Save failed:', k, err));
+  },
+  id() { return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
+};
+
+// ==================== ROUTING ====================
+let currentPage = 'dashboard';
+function navigate(page) {
+  currentPage = page;
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => {
+    if (a.getAttribute('onclick') === `navigate('${page}')`) a.classList.add('active');
+  });
+  // close sidebar on mobile
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+  render();
+}
+
+const pageTitles = {
+  dashboard:'Dashboard', suppliers:'Suppliers', customers:'Customers',
+  rawmaterials:'Raw Materials', products:'Products', production:'Production',
+  purchases:'Purchases', sales:'Sales', cashflow:'Cash Flow', reports:'Reports', salaries:'Salaries'
+};
+const pageBadges = {
+  dashboard:'Overview', suppliers:'Manage', customers:'Manage',
+  rawmaterials:'Inventory', products:'Catalog', production:'Manufacturing',
+  purchases:'Procurement', sales:'Revenue', cashflow:'Finance', reports:'Analytics', salaries:'HR'
+};
+
+function render() {
+  document.getElementById('page-title').textContent = pageTitles[currentPage];
+  document.getElementById('page-badge').textContent = pageBadges[currentPage];
+  const pages = {
+    dashboard: renderDashboard, suppliers: renderSuppliers, customers: renderCustomers,
+    rawmaterials: renderRawMaterials, products: renderProducts, production: renderProduction,
+    purchases: renderPurchases, sales: renderSales, cashflow: renderCashFlow,
+    reports: renderReports, salaries: renderSalaries
+  };
+  document.getElementById('content').innerHTML = '';
+  if (pages[currentPage]) pages[currentPage]();
+}
+
+// ==================== HELPERS ====================
+const fmt = n => 'Rs. ' + Number(n||0).toLocaleString('en-PK');
+const fmtNum = n => Number(n||0).toLocaleString('en-PK');
+const dateStr = d => d ? new Date(d).toLocaleDateString('en-GB') : '-';
+let _uidCounter = 1;
+function genUID(prefix) {
+  const arr = DB.get(prefix === 'S' ? 'suppliers' : prefix === 'C' ? 'customers' : prefix === 'M' ? 'rawmaterials' : prefix === 'P' ? 'products' : 'sales');
+  const nums = arr.map(x => parseInt((x.uid||'').replace(/\D/g,''))||0);
+  const next = (nums.length ? Math.max(...nums) : 0) + 1;
+  return prefix + String(next).padStart(4,'0');
+}
+
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = `toast-msg ${type}`;
+  el.textContent = msg;
+  t.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+function openModal(title, body, footer) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-footer').innerHTML = footer;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function confirmDelete(msg, onYes) {
+  window._pendingDelete = onYes;
+  openModal('Confirm Deletion',
+    `<div class="alert danger">${msg}<br><br>This action cannot be undone.</div>`,
+    `<button class="btn btn-danger" onclick="window._pendingDelete();closeModal()">Delete</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard() {
+  const suppliers = DB.get('suppliers'), customers = DB.get('customers');
+  const rawmaterials = DB.get('rawmaterials'), products = DB.get('products');
+  const purchases = DB.get('purchases'), sales = DB.get('sales');
+  const cashflow = DB.get('cashflow');
+
+  const totalSupplierBalance = suppliers.reduce((a,b)=>a+(b.balance||0),0);
+  const totalCustomerBalance = customers.reduce((a,b)=>a+(b.balance||0),0);
+  const totalSales = sales.reduce((a,b)=>a+b.total,0);
+  const totalPurchases = purchases.reduce((a,b)=>a+b.total,0);
+  const totalIn = cashflow.filter(c=>c.type==='in').reduce((a,b)=>a+b.amount,0);
+  const totalOut = cashflow.filter(c=>c.type==='out').reduce((a,b)=>a+b.amount,0);
+  const lowStock = rawmaterials.filter(m=>m.qty<=m.reorderLevel);
+  const salaries = DB.get('salaries');
+  const totalSalary = salaries.reduce((a,b)=>a+(b.monthlySalary||0),0);
+
+  // Monthly filter
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monthlySales = sales.filter(s=>s.date&&s.date.startsWith(thisMonth)).reduce((a,b)=>a+b.total,0);
+  const monthlyPurchases = purchases.filter(p=>p.date&&p.date.startsWith(thisMonth)).reduce((a,b)=>a+b.total,0);
+
+  const c = document.getElementById('content');
+
+  const kpiHtml = `
+    <div class="kpi-grid" style="margin-bottom:10px;">
+      <div class="kpi amber" onclick="navigate('sales')" title="Click to view Sales">
+        <div class="kpi-label">Total Sales</div>
+        <div class="kpi-val">${fmt(totalSales)}</div>
+        <div class="kpi-sub">${sales.length} invoices — This month: ${fmt(monthlySales)}</div>
+      </div>
+      <div class="kpi blue" onclick="navigate('purchases')" title="Click to view Purchases">
+        <div class="kpi-label">Total Purchases</div>
+        <div class="kpi-val">${fmt(totalPurchases)}</div>
+        <div class="kpi-sub">${purchases.length} orders — This month: ${fmt(monthlyPurchases)}</div>
+      </div>
+      <div class="kpi green" onclick="navigate('cashflow')" title="Click to view Cash Flow">
+        <div class="kpi-label">Cash In</div>
+        <div class="kpi-val">${fmt(totalIn)}</div>
+        <div class="kpi-sub">${cashflow.filter(c=>c.type==='in').length} receipts</div>
+      </div>
+      <div class="kpi red" onclick="navigate('cashflow')" title="Click to view Cash Flow">
+        <div class="kpi-label">Cash Out</div>
+        <div class="kpi-val">${fmt(totalOut)}</div>
+        <div class="kpi-sub">${cashflow.filter(c=>c.type==='out').length} payments</div>
+      </div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi red" onclick="navigate('suppliers')" title="Click to view Suppliers">
+        <div class="kpi-label">Payable (Suppliers)</div>
+        <div class="kpi-val">${fmt(totalSupplierBalance)}</div>
+        <div class="kpi-sub">${suppliers.length} suppliers</div>
+      </div>
+      <div class="kpi green" onclick="navigate('customers')" title="Click to view Customers">
+        <div class="kpi-label">Receivable (Customers)</div>
+        <div class="kpi-val">${fmt(totalCustomerBalance)}</div>
+        <div class="kpi-sub">${customers.length} customers</div>
+      </div>
+      <div class="kpi blue" onclick="navigate('cashflow')">
+        <div class="kpi-label">Net Cash Position</div>
+        <div class="kpi-val">${fmt(totalIn - totalOut)}</div>
+        <div class="kpi-sub">Cash in hand</div>
+      </div>
+      <div class="kpi amber" onclick="navigate('rawmaterials')" title="Click to view Raw Materials">
+        <div class="kpi-label">Low Stock Items</div>
+        <div class="kpi-val">${lowStock.length}</div>
+        <div class="kpi-sub">${lowStock.length ? 'Reorder required' : 'All stocked'}</div>
+      </div>
+    </div>`;
+
+  const alertHtml = lowStock.length ? `
+    <div class="alert warning mb-16">⚠️ <strong>${lowStock.length} item(s)</strong> below reorder level: ${lowStock.map(m=>m.name).join(', ')}</div>` : '';
+
+  const recentSales = [...sales].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  const recentPurch = [...purchases].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+
+  const recentHtml = `
+    <div class="grid-2col">
+      <div class="card">
+        <div class="card-header"><h4>Recent Sales</h4><button class="btn btn-outline btn-sm" onclick="navigate('sales')">View All →</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Bill No.</th><th>Date</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+        ${recentSales.length ? recentSales.map(s=>{
+          const cust = DB.get('customers').find(c=>c.id===s.customerId);
+          const unpaid = s.total - s.paid;
+          return `<tr><td><span class="id-badge" style="cursor:pointer" onclick="viewSale('${s.id}')">${s.uid||'-'}</span></td><td>${dateStr(s.date)}</td><td>${cust?cust.name:'-'}</td><td class="num">${fmt(s.total)}</td><td><span class="tag ${unpaid>0?'amber':'green'}">${unpaid>0?'Partial':'Paid'}</span></td></tr>`;
+        }).join('') : '<tr><td colspan="5" class="text-muted" style="text-align:center;padding:20px">No sales yet</td></tr>'}
+        </tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h4>Recent Purchases</h4><button class="btn btn-outline btn-sm" onclick="navigate('purchases')">View All →</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Date</th><th>Supplier</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+        ${recentPurch.length ? recentPurch.map(p=>{
+          const sup = DB.get('suppliers').find(s=>s.id===p.supplierId);
+          const unpaid = p.total - p.paid;
+          return `<tr><td>${dateStr(p.date)}</td><td>${sup?sup.name:'-'}</td><td class="num">${fmt(p.total)}</td><td><span class="tag ${unpaid>0?'red':'green'}">${unpaid>0?'Pending':'Paid'}</span></td></tr>`;
+        }).join('') : '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:20px">No purchases yet</td></tr>'}
+        </tbody></table></div>
+      </div>
+    </div>`;
+
+  const rawmatsForDash = DB.get('rawmaterials');
+  const stockHtml = `
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <h4>📦 Raw Material &amp; Stock Overview</h4>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="text" id="dash-stock-q" placeholder="Filter by name…" oninput="filterDashStock()" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;width:160px">
+          <select id="dash-stock-status" onchange="filterDashStock()" style="padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
+            <option value="">All Status</option>
+            <option value="low">⚠️ Low Stock</option>
+            <option value="ok">✅ In Stock</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="navigate('rawmaterials')">View All →</button>
+        </div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Material</th><th>In Stock</th><th>Unit</th><th>Reorder Level</th><th>Cost/Unit</th><th>Status</th></tr></thead>
+        <tbody id="dash-stock-tbody">${renderDashStockRows(rawmatsForDash)}</tbody>
+      </table></div>
+    </div>`;
+
+  const dashQuickHtml = `
+    <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="openDailyExpenseForm()">🧾 Add Daily Expense</button>
+      <button class="btn btn-outline" onclick="navigate('dailyexpenses')">View All Expenses →</button>
+    </div>`;
+  c.innerHTML = alertHtml + kpiHtml + dashQuickHtml + '<div style="margin-bottom:24px;">' + recentHtml + '</div>' + stockHtml;
+}
+function renderDashStockRows(mats) {
+  if (!mats.length) return '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No materials added yet</td></tr>';
+  return mats.map(m=>{
+    const status = m.qty<=m.reorderLevel ? 'red' : m.qty<=m.reorderLevel*1.5 ? 'amber' : 'green';
+    const label = m.qty<=m.reorderLevel ? '⚠️ Low Stock' : m.qty<=m.reorderLevel*1.5 ? 'Medium' : '✅ In Stock';
+    return `<tr>
+      <td><span class="id-badge">${m.uid||'-'}</span></td>
+      <td><strong>${m.name}</strong></td>
+      <td class="num" style="color:var(--${status})">${m.qty}</td>
+      <td class="text-muted">${m.unit}</td>
+      <td class="num">${m.reorderLevel}</td>
+      <td class="num">${fmt(m.costPrice)}</td>
+      <td><span class="tag ${status}">${label}</span></td>
+    </tr>`;
+  }).join('');
+}
+function filterDashStock() {
+  const q = (document.getElementById('dash-stock-q')||{value:''}).value.toLowerCase();
+  const st = (document.getElementById('dash-stock-status')||{value:''}).value;
+  let mats = DB.get('rawmaterials');
+  if (q) mats = mats.filter(m=>m.name.toLowerCase().includes(q)||(m.uid||'').toLowerCase().includes(q));
+  if (st==='low') mats = mats.filter(m=>m.qty<=m.reorderLevel);
+  if (st==='ok') mats = mats.filter(m=>m.qty>m.reorderLevel);
+  const tbody = document.getElementById('dash-stock-tbody');
+  if (tbody) tbody.innerHTML = renderDashStockRows(mats);
+}
+
+// ==================== SUPPLIERS ====================
+function renderSuppliers() {
+  const suppliers = DB.get('suppliers');
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="section-header">
+      <h3>All Suppliers (${suppliers.length})</h3>
+      <button class="btn btn-primary" onclick="openSupplierForm()">+ Add Supplier</button>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <input type="text" id="sup-search" placeholder="Search by name, phone, city…" oninput="filterSuppliers()">
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Supplier Name</th><th>Phone</th><th>City</th><th>Total Purchased</th><th>Total Paid</th><th>Balance (Payable)</th><th>Actions</th></tr></thead>
+        <tbody id="sup-tbody">
+          ${renderSupplierRows(suppliers)}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+function renderSupplierRows(suppliers) {
+  if (!suppliers.length) return '<tr><td colspan="8"><div class="empty"><div class="empty-icon">🏭</div><p>No suppliers found</p></div></td></tr>';
+  return suppliers.map(s => {
+    const purchases = DB.get('purchases').filter(p=>p.supplierId===s.id);
+    const totalPurchased = purchases.reduce((a,b)=>a+b.total,0);
+    const totalPaid = purchases.reduce((a,b)=>a+b.paid,0);
+    return `<tr>
+      <td><span class="id-badge">${s.uid||'-'}</span></td>
+      <td><strong>${s.name}</strong></td>
+      <td>${s.phone||'-'}</td>
+      <td>${s.city||'-'}</td>
+      <td class="num">${fmt(totalPurchased)}</td>
+      <td class="num text-green">${fmt(totalPaid)}</td>
+      <td class="num ${s.balance>0?'text-red':''}">${fmt(s.balance)}</td>
+      <td><div class="action-row">
+        <button class="btn btn-outline btn-sm" onclick="viewSupplierLedger('${s.id}')">Ledger</button>
+        <button class="btn btn-outline btn-sm" onclick="openSupplierForm('${s.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSupplier('${s.id}')">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function filterSuppliers() {
+  const q = document.getElementById('sup-search').value.toLowerCase();
+  const filtered = DB.get('suppliers').filter(s =>
+    s.name.toLowerCase().includes(q) || (s.phone||'').includes(q) || (s.city||'').toLowerCase().includes(q) || (s.uid||'').toLowerCase().includes(q)
+  );
+  document.getElementById('sup-tbody').innerHTML = renderSupplierRows(filtered);
+}
+
+function openSupplierForm(id) {
+  const sup = id ? DB.get('suppliers').find(s=>s.id===id) : null;
+  const uid = sup ? sup.uid : genUID('S');
+  openModal(id?'Edit Supplier':'Add Supplier', `
+    <div class="form-grid">
+      <div class="form-group"><label>Supplier ID (Auto)</label><input id="f-suid" value="${uid}" readonly style="opacity:.6"></div>
+      <div class="form-group"><label>Supplier Name</label><input id="f-sname" value="${sup?sup.name:''}" placeholder="Company / Person name"></div>
+      <div class="form-group"><label>Phone</label><input id="f-sphone" value="${sup?sup.phone:''}" placeholder="0300-1234567"></div>
+      <div class="form-group"><label>City</label><input id="f-scity" value="${sup?sup.city:''}" placeholder="Multan"></div>
+      <div class="form-group full"><label>Address</label><textarea id="f-saddress" rows="2">${sup?sup.address:''}</textarea></div>
+      ${id?`<div class="form-group"><label>Opening Balance (Payable)</label><input id="f-sbal" type="number" value="${sup?sup.balance:0}"></div>`:''}
+    </div>`,
+    `<button class="btn btn-primary" onclick="saveSupplier('${id||''}')">Save Supplier</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+function saveSupplier(id) {
+  const name = document.getElementById('f-sname').value.trim();
+  if (!name) { toast('Supplier name is required','error'); return; }
+  const suppliers = DB.get('suppliers');
+  const uid = document.getElementById('f-suid').value;
+  if (id) {
+    const i = suppliers.findIndex(s=>s.id===id);
+    suppliers[i] = {...suppliers[i], uid, name, phone:document.getElementById('f-sphone').value, city:document.getElementById('f-scity').value, address:document.getElementById('f-saddress').value, balance:parseFloat(document.getElementById('f-sbal')?.value||suppliers[i].balance)};
+  } else {
+    suppliers.push({id:DB.id(), uid, name, phone:document.getElementById('f-sphone').value, city:document.getElementById('f-scity').value, address:document.getElementById('f-saddress').value, balance:0});
+  }
+  DB.set('suppliers', suppliers);
+  closeModal(); toast('Supplier saved!'); renderSuppliers();
+}
+function deleteSupplier(id) {
+  confirmDelete('Are you sure you want to delete this supplier?', () => {
+    DB.set('suppliers', DB.get('suppliers').filter(s=>s.id!==id));
+    toast('Supplier deleted'); navigate('suppliers');
+  });
+}
+function viewSupplierLedger(id) {
+  const sup = DB.get('suppliers').find(s=>s.id===id);
+  const purchases = DB.get('purchases').filter(p=>p.supplierId===id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const totalPurchased = purchases.reduce((a,b)=>a+b.total,0);
+  const totalPaid = purchases.reduce((a,b)=>a+b.paid,0);
+  const balance = totalPurchased - totalPaid;
+  openModal(`Ledger: ${sup.name} (${sup.uid||'-'})`, `
+    <div class="ledger-header">
+      <div class="ledger-stat"><div class="ls-label">Total Purchased</div><div class="ls-val text-amber">${fmt(totalPurchased)}</div></div>
+      <div class="ledger-stat"><div class="ls-label">Total Paid</div><div class="ls-val text-green">${fmt(totalPaid)}</div></div>
+      <div class="ledger-stat"><div class="ls-label">Balance Payable</div><div class="ls-val text-red">${fmt(balance)}</div></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>PO No.</th><th>Date</th><th>Type</th><th>Debit (Purchase)</th><th>Credit (Payment)</th><th>Running Balance</th></tr></thead>
+      <tbody>
+        ${(()=>{
+          let rows = [], runBal = 0;
+          purchases.forEach(p=>{
+            runBal += p.total;
+            rows.push(`<tr><td><span class="id-badge" style="cursor:pointer" onclick="viewPurchase('${p.id}')">${p.uid||'-'}</span></td><td>${dateStr(p.date)}</td><td><span class="tag blue">Purchase</span></td><td class="num text-red">${fmt(p.total)}</td><td class="num">—</td><td class="num text-red">${fmt(runBal)}</td></tr>`);
+            if(p.paid>0){
+              runBal -= p.paid;
+              rows.push(`<tr><td><span class="id-badge">${p.uid||'-'}</span></td><td>${dateStr(p.date)}</td><td><span class="tag green">Payment</span></td><td class="num">—</td><td class="num text-green">${fmt(p.paid)}</td><td class="num text-red">${fmt(runBal)}</td></tr>`);
+            }
+          });
+          return rows.join('') || '<tr><td colspan="6" class="text-muted" style="text-align:center;padding:20px">No transactions yet</td></tr>';
+        })()}
+      </tbody>
+    </table></div>`,
+    `<button class="btn btn-info" onclick="exportLedgerCSV('supplier','${id}')">⬇️ Export CSV</button>
+     <button class="btn btn-outline" onclick="printLedger('supplier','${id}')">🖨️ Print</button>
+     <button class="btn btn-outline" onclick="closeModal()">Close</button>`
+  );
+}
+
+// ==================== CUSTOMERS ====================
+function renderCustomers() {
+  const customers = DB.get('customers');
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="section-header">
+      <h3>All Customers (${customers.length})</h3>
+      <button class="btn btn-primary" onclick="openCustomerForm()">+ Add Customer</button>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <input type="text" id="cust-search" placeholder="Search by name, phone, city…" oninput="filterCustomers()">
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Customer Name</th><th>Phone</th><th>City</th><th>Total Sales</th><th>Amount Received</th><th>Balance (Receivable)</th><th>Actions</th></tr></thead>
+        <tbody id="cust-tbody">
+          ${renderCustomerRows(customers)}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+function renderCustomerRows(customers) {
+  if (!customers.length) return '<tr><td colspan="8"><div class="empty"><div class="empty-icon">🏫</div><p>No customers found</p></div></td></tr>';
+  return customers.map(cust => {
+    const custSales = DB.get('sales').filter(s=>s.customerId===cust.id);
+    const totalSold = custSales.reduce((a,b)=>a+b.total,0);
+    const totalReceived = custSales.reduce((a,b)=>a+b.paid,0);
+    const bal = totalSold - totalReceived;
+    return `<tr>
+      <td><span class="id-badge">${cust.uid||'-'}</span></td>
+      <td><strong>${cust.name}</strong></td>
+      <td>${cust.phone||'-'}</td>
+      <td>${cust.city||'-'}</td>
+      <td class="num">${fmt(totalSold)}</td>
+      <td class="num text-green">${fmt(totalReceived)}</td>
+      <td class="num ${bal>0?'text-amber':''}">${fmt(bal)}</td>
+      <td><div class="action-row">
+        <button class="btn btn-outline btn-sm" onclick="viewCustomerLedger('${cust.id}')">Ledger</button>
+        <button class="btn btn-success btn-sm" onclick="openBillForCustomer('${cust.id}')">New Bill</button>
+        <button class="btn btn-outline btn-sm" onclick="openCustomerForm('${cust.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCustomer('${cust.id}')">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function filterCustomers() {
+  const q = document.getElementById('cust-search').value.toLowerCase();
+  const filtered = DB.get('customers').filter(c =>
+    c.name.toLowerCase().includes(q)||(c.phone||'').includes(q)||(c.city||'').toLowerCase().includes(q)||(c.uid||'').toLowerCase().includes(q)
+  );
+  document.getElementById('cust-tbody').innerHTML = renderCustomerRows(filtered);
+}
+
+function openCustomerForm(id) {
+  const cust = id ? DB.get('customers').find(c=>c.id===id) : null;
+  const uid = cust ? cust.uid : genUID('C');
+  openModal(id?'Edit Customer':'Add Customer', `
+    <div class="form-grid">
+      <div class="form-group"><label>Customer ID (Auto)</label><input id="f-cuid" value="${uid}" readonly style="opacity:.6"></div>
+      <div class="form-group"><label>Customer Name</label><input id="f-cname" value="${cust?cust.name:''}" placeholder="School / Customer name"></div>
+      <div class="form-group"><label>Phone</label><input id="f-cphone" value="${cust?cust.phone:''}" placeholder="042-1234567"></div>
+      <div class="form-group"><label>City</label><input id="f-ccity" value="${cust?cust.city:''}" placeholder="Multan"></div>
+      <div class="form-group full"><label>Address</label><textarea id="f-caddress" rows="2">${cust?cust.address:''}</textarea></div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="saveCustomer('${id||''}')">Save Customer</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+function saveCustomer(id) {
+  const name = document.getElementById('f-cname').value.trim();
+  if (!name) { toast('Customer name is required','error'); return; }
+  const customers = DB.get('customers');
+  const uid = document.getElementById('f-cuid').value;
+  if (id) {
+    const i = customers.findIndex(c=>c.id===id);
+    customers[i] = {...customers[i], uid, name, phone:document.getElementById('f-cphone').value, city:document.getElementById('f-ccity').value, address:document.getElementById('f-caddress').value};
+  } else {
+    customers.push({id:DB.id(), uid, name, phone:document.getElementById('f-cphone').value, city:document.getElementById('f-ccity').value, address:document.getElementById('f-caddress').value, balance:0});
+  }
+  DB.set('customers', customers);
+  closeModal(); toast('Customer saved!'); renderCustomers();
+}
+function deleteCustomer(id) {
+  confirmDelete('Are you sure you want to delete this customer?', () => {
+    DB.set('customers', DB.get('customers').filter(c=>c.id!==id));
+    toast('Customer deleted'); navigate('customers');
+  });
+}
+function openBillForCustomer(custId) {
+  closeModal();
+  openSaleFormWithCustomer(custId);
+}
+function viewCustomerLedger(id) {
+  const cust = DB.get('customers').find(c=>c.id===id);
+  const sales = DB.get('sales').filter(s=>s.customerId===id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const totalSold = sales.reduce((a,b)=>a+b.total,0);
+  const totalReceived = sales.reduce((a,b)=>a+b.paid,0);
+  openModal(`Ledger: ${cust.name} (${cust.uid||'-'})`, `
+    <div class="ledger-header">
+      <div class="ledger-stat"><div class="ls-label">Total Sales</div><div class="ls-val text-amber">${fmt(totalSold)}</div></div>
+      <div class="ledger-stat"><div class="ls-label">Amount Received</div><div class="ls-val text-green">${fmt(totalReceived)}</div></div>
+      <div class="ledger-stat"><div class="ls-label">Balance Due</div><div class="ls-val text-amber">${fmt(totalSold-totalReceived)}</div></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Bill No.</th><th>Date</th><th>Items</th><th>Invoice Total</th><th>Received</th><th>Running Balance</th></tr></thead>
+      <tbody>
+        ${sales.map((s,i)=>{
+          const runBal = sales.slice(0,i+1).reduce((a,b)=>a+(b.total-b.paid),0);
+          return `<tr><td><span class="id-badge" style="cursor:pointer;text-decoration:underline" onclick="closeModal();setTimeout(()=>viewSale('${s.id}'),150)">${s.uid||'-'}</span></td><td>${dateStr(s.date)}</td><td>${s.items.length} items</td>
+          <td class="num">${fmt(s.total)}</td><td class="num text-green">${fmt(s.paid)}</td>
+          <td class="num text-amber">${fmt(runBal)}</td></tr>`;
+        }).join('') || '<tr><td colspan="6" class="text-muted" style="text-align:center;padding:20px">No transactions yet</td></tr>'}
+      </tbody>
+    </table></div>`,
+    `<button class="btn btn-info" onclick="exportLedgerCSV('customer','${id}')">⬇️ Export CSV</button>
+     <button class="btn btn-outline" onclick="printLedger('customer','${id}')">🖨️ Print</button>
+     <button class="btn btn-outline" onclick="closeModal()">Close</button>`
+  );
+}
+
+// ==================== RAW MATERIALS ====================
+function renderRawMaterials() {
+  const mats = DB.get('rawmaterials');
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="section-header">
+      <h3>Raw Materials Stock</h3>
+      <button class="btn btn-primary" onclick="openMaterialForm()">+ Add Material</button>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <input type="text" id="mat-search" placeholder="Search material…" oninput="filterMaterials()">
+        <select id="mat-filter-status" onchange="filterMaterials()">
+          <option value="">All Status</option>
+          <option value="low">Low Stock Only</option>
+          <option value="ok">In Stock</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Material Name</th><th>Supplier</th><th>Unit</th><th>In Stock</th><th>Reorder Level</th><th>Cost/Unit</th><th>Stock Level</th><th>Actions</th></tr></thead>
+        <tbody id="mat-tbody">
+          ${renderMaterialRows(mats)}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+function renderMaterialRows(mats) {
+  if (!mats.length) return '<tr><td colspan="9"><div class="empty"><div class="empty-icon">📦</div><p>No raw materials yet</p></div></td></tr>';
+  return mats.map(m => {
+    const pct = Math.min(100, Math.round((m.qty/Math.max(m.reorderLevel*3,1))*100));
+    const status = m.qty<=m.reorderLevel ? 'red' : m.qty<=m.reorderLevel*1.5 ? 'amber' : 'green';
+    const sup = DB.get('suppliers').find(s=>s.id===m.supplierId);
+    return `<tr>
+      <td><span class="id-badge">${m.uid||'-'}</span></td>
+      <td><strong>${m.name}</strong></td>
+      <td>${sup?`<span class="id-badge" style="background:rgba(59,130,246,0.1);color:var(--blue)">${sup.uid}</span> ${sup.name}`:'-'}</td>
+      <td>${m.unit}</td>
+      <td class="num">${fmtNum(m.qty)}</td>
+      <td class="num">${fmtNum(m.reorderLevel)}</td>
+      <td class="num">${fmt(m.costPrice)}</td>
+      <td style="min-width:120px">
+        <div style="font-size:11px;color:var(--${status})">${m.qty<=m.reorderLevel?'⚠️ Low Stock':m.qty<=m.reorderLevel*1.5?'Medium':'In Stock'}</div>
+        <div class="stock-bar"><div class="stock-bar-fill" style="width:${pct}%;background:var(--${status})"></div></div>
+      </td>
+      <td><div class="action-row">
+        <button class="btn btn-outline btn-sm" onclick="viewMaterialHistory('${m.id}')">History</button>
+        <button class="btn btn-outline btn-sm" onclick="adjustStock('${m.id}')">Adjust</button>
+        <button class="btn btn-outline btn-sm" onclick="openMaterialForm('${m.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteMaterial('${m.id}')">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function filterMaterials() {
+  let mats = DB.get('rawmaterials');
+  const q = document.getElementById('mat-search').value.toLowerCase();
+  const status = document.getElementById('mat-filter-status').value;
+  if (q) mats = mats.filter(m=>m.name.toLowerCase().includes(q)||(m.uid||'').toLowerCase().includes(q));
+  if (status==='low') mats = mats.filter(m=>m.qty<=m.reorderLevel);
+  if (status==='ok') mats = mats.filter(m=>m.qty>m.reorderLevel);
+  document.getElementById('mat-tbody').innerHTML = renderMaterialRows(mats);
+}
+
+function viewMaterialHistory(id) {
+  const m = DB.get('rawmaterials').find(x=>x.id===id);
+  const purchases = DB.get('purchases').filter(p=>p.items.some(it=>it.matId===id));
+  const productions = DB.get('production').filter(pr=>{
+    const prod = DB.get('products').find(p=>p.id===pr.productId);
+    return prod && (prod.bom||[]).some(b=>b.matId===id);
+  });
+  openModal(`Material History: ${m.name}`, `
+    <div class="ledger-header">
+      <div class="ledger-stat"><div class="ls-label">Current Stock</div><div class="ls-val text-amber">${fmtNum(m.qty)} ${m.unit}</div></div>
+      <div class="ledger-stat"><div class="ls-label">Purchase Events</div><div class="ls-val text-blue">${purchases.length}</div></div>
+      <div class="ledger-stat"><div class="ls-label">Production Uses</div><div class="ls-val text-green">${productions.length}</div></div>
+    </div>
+    <h4 style="margin-bottom:10px;font-size:13px;color:var(--light);">Purchase History</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Supplier</th><th>Qty In</th><th>Rate</th></tr></thead>
+      <tbody>
+        ${purchases.map(p=>{
+          const sup = DB.get('suppliers').find(s=>s.id===p.supplierId);
+          const item = p.items.find(it=>it.matId===id);
+          return `<tr><td>${dateStr(p.date)}</td><td>${sup?sup.name:'-'}</td><td class="num text-green">+${item?item.qty:'-'} ${m.unit}</td><td class="num">${item?fmt(item.rate):'-'}</td></tr>`;
+        }).join('') || '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:16px">No purchase history</td></tr>'}
+      </tbody>
+    </table></div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Close</button>`
+  );
+}
+
+function openMaterialForm(id) {
+  const m = id ? DB.get('rawmaterials').find(r=>r.id===id) : null;
+  const uid = m ? m.uid : genUID('M');
+  const suppliers = DB.get('suppliers');
+  openModal(id?'Edit Material':'Add Raw Material', `
+    <div class="form-grid">
+      <div class="form-group"><label>Material ID (Auto)</label><input id="f-muid" value="${uid}" readonly style="opacity:.6"></div>
+      <div class="form-group"><label>Material Name</label><input id="f-mname" value="${m?m.name:''}" placeholder="e.g. A4 Paper Reams"></div>
+      <div class="form-group full"><label>Default Supplier</label><select id="f-msup">
+        <option value="">-- Select Supplier --</option>
+        ${suppliers.map(s=>`<option value="${s.id}" ${m&&m.supplierId===s.id?'selected':''}>${s.name}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label>Unit</label><input id="f-munit" value="${m?m.unit:''}" placeholder="Ream / Bundle / Piece"></div>
+      <div class="form-group"><label>Initial / Current Qty</label><input id="f-mqty" type="number" value="${m?m.qty:0}"></div>
+      <div class="form-group"><label>Reorder Level</label><input id="f-mreorder" type="number" value="${m?m.reorderLevel:0}"></div>
+      <div class="form-group"><label>Cost Per Unit (Rs.)</label><input id="f-mcost" type="number" value="${m?m.costPrice:0}"></div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="saveMaterial('${id||''}')">Save</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+function saveMaterial(id) {
+  const name = document.getElementById('f-mname').value.trim();
+  if (!name) { toast('Name is required','error'); return; }
+  const mats = DB.get('rawmaterials');
+  const uid = document.getElementById('f-muid').value;
+  const data = { uid, name, supplierId:document.getElementById('f-msup').value, unit:document.getElementById('f-munit').value, qty:parseFloat(document.getElementById('f-mqty').value)||0, reorderLevel:parseFloat(document.getElementById('f-mreorder').value)||0, costPrice:parseFloat(document.getElementById('f-mcost').value)||0 };
+  if (id) { const i=mats.findIndex(m=>m.id===id); mats[i]={...mats[i],...data}; }
+  else mats.push({id:DB.id(),...data});
+  DB.set('rawmaterials', mats);
+  closeModal(); toast('Material saved!'); renderRawMaterials();
+}
+function adjustStock(id) {
+  const m = DB.get('rawmaterials').find(r=>r.id===id);
+  openModal(`Adjust Stock: ${m.name}`, `
+    <div class="alert info">Current stock: <strong>${fmtNum(m.qty)} ${m.unit}</strong></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Adjustment Type</label>
+        <select id="f-adjtype"><option value="add">Add Stock (+)</option><option value="remove">Remove Stock (-)</option></select>
+      </div>
+      <div class="form-group"><label>Quantity</label><input id="f-adjqty" type="number" min="0" value="0"></div>
+      <div class="form-group full"><label>Reason</label><input id="f-adjnote" placeholder="e.g. Stock count adjustment"></div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="doAdjust('${id}')">Apply Adjustment</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+function doAdjust(id) {
+  const qty = parseFloat(document.getElementById('f-adjqty').value)||0;
+  const type = document.getElementById('f-adjtype').value;
+  const mats = DB.get('rawmaterials');
+  const i = mats.findIndex(m=>m.id===id);
+  if (type==='add') mats[i].qty += qty;
+  else mats[i].qty = Math.max(0, mats[i].qty - qty);
+  DB.set('rawmaterials', mats);
+  closeModal(); toast('Stock adjusted!'); renderRawMaterials();
+}
+function deleteMaterial(id) {
+  confirmDelete('Delete this raw material?', () => {
+    DB.set('rawmaterials', DB.get('rawmaterials').filter(m=>m.id!==id));
+    toast('Deleted'); navigate('rawmaterials');
+  });
+}
+
+// ==================== PRODUCTS ====================
+function renderProducts() {
+  const prods = DB.get('products');
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="section-header">
+      <h3>Products (${prods.length})</h3>
+      <button class="btn btn-primary" onclick="openProductForm()">+ Add Product</button>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <input type="text" id="prod-search" placeholder="Search product…" oninput="filterProducts()">
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Product Name</th><th>Description</th><th>Selling Price</th><th>Current Stock</th><th>Stock Value</th><th>BOM Items</th><th>Actions</th></tr></thead>
+        <tbody id="prod-tbody">
+          ${renderProductRows(prods)}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+function renderProductRows(prods) {
+  if (!prods.length) return '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📓</div><p>No products yet</p></div></td></tr>';
+  return prods.map(p=>`<tr>
+    <td><span class="id-badge">${p.uid||'-'}</span></td>
+    <td><strong>📓 ${p.name}</strong></td>
+    <td class="text-muted">${p.description||'-'}</td>
+    <td class="num text-amber">${fmt(p.sellingPrice)}</td>
+    <td class="num">${fmtNum(p.stock||0)}</td>
+    <td class="num">${fmt((p.stock||0)*p.sellingPrice)}</td>
+    <td>${(p.bom||[]).length} materials</td>
+    <td><div class="action-row">
+      <button class="btn btn-outline btn-sm" onclick="viewBOM('${p.id}')">BOM</button>
+      <button class="btn btn-outline btn-sm" onclick="openProductForm('${p.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Delete</button>
+    </div></td>
+  </tr>`).join('');
+}
+function filterProducts() {
+  const q = document.getElementById('prod-search').value.toLowerCase();
+  const filtered = DB.get('products').filter(p=>p.name.toLowerCase().includes(q)||(p.uid||'').toLowerCase().includes(q));
+  document.getElementById('prod-tbody').innerHTML = renderProductRows(filtered);
+}
+
+function openProductForm(id) {
+  const p = id ? DB.get('products').find(x=>x.id===id) : null;
+  const uid = p ? p.uid : genUID('P');
+  const mats = DB.get('rawmaterials');
+  const matOptions = mats.map(m=>`<option value="${m.id}">${m.uid ? '['+m.uid+'] ' : ''}${m.name} (${m.unit})</option>`).join('');
+  let bomRows = (p&&p.bom||[]).map(b=>`
+    <div class="item-row">
+      <select>${mats.map(m=>`<option value="${m.id}" ${m.id===b.matId?'selected':''}>${m.uid?'['+m.uid+'] ':''}${m.name} (${m.unit})</option>`).join('')}</select>
+      <input type="number" value="${b.qty}" placeholder="Qty" min="0" step="0.001">
+      <button class="remove-btn" onclick="this.closest('.item-row').remove()">✕</button>
+    </div>`).join('');
+  openModal(id?'Edit Product':'Add Product', `
+    <div class="form-grid">
+      <div class="form-group"><label>Product ID (Auto)</label><input id="f-puid" value="${uid}" readonly style="opacity:.6"></div>
+      <div class="form-group"><label>Product Name</label><input id="f-pname" value="${p?p.name:''}" placeholder="e.g. A4 Notebook 200 Pages"></div>
+      <div class="form-group full"><label>Description</label><input id="f-pdesc" value="${p?p.description:''}" placeholder="Short description"></div>
+      <div class="form-group"><label>Selling Price (Rs.)</label><input id="f-pprice" type="number" value="${p?p.sellingPrice:0}"></div>
+      <div class="form-group"><label>Current Stock</label><input id="f-pstock" type="number" value="${p?p.stock||0:0}"></div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <label>Bill of Materials (BOM) — Per Unit</label>
+        <button class="btn btn-outline btn-sm" onclick="addBOMRow()">+ Add Material</button>
+      </div>
+      <div class="alert info" style="margin-bottom:10px;font-size:12px;">Enter materials required to produce <strong>one unit</strong> of this product.</div>
+      <div class="item-rows">
+        <div class="item-row-header"><span>Material</span><span>Qty Per Unit</span><span></span></div>
+        <div id="bom-rows">${bomRows}</div>
+      </div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="saveProduct('${id||''}')">Save Product</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+  window._matOptionsHtml = matOptions;
+}
+function addBOMRow() {
+  const container = document.getElementById('bom-rows');
+  const div = document.createElement('div');
+  div.className = 'item-row';
+  div.innerHTML = `<select>${window._matOptionsHtml}</select><input type="number" value="1" min="0" step="0.001"><button class="remove-btn" onclick="this.closest('.item-row').remove()">✕</button>`;
+  container.appendChild(div);
+}
+function saveProduct(id) {
+  const name = document.getElementById('f-pname').value.trim();
+  if (!name) { toast('Product name required','error'); return; }
+  const uid = document.getElementById('f-puid').value;
+  const rows = document.querySelectorAll('#bom-rows .item-row');
+  const bom = Array.from(rows).map(r=>{
+    const sel = r.querySelector('select');
+    const inp = r.querySelector('input');
+    return {matId:sel.value, qty:parseFloat(inp.value)||0};
+  }).filter(x=>x.qty>0);
+  const prods = DB.get('products');
+  const data = { uid, name, description:document.getElementById('f-pdesc').value, sellingPrice:parseFloat(document.getElementById('f-pprice').value)||0, stock:parseFloat(document.getElementById('f-pstock').value)||0, bom };
+  if (id) { const i=prods.findIndex(p=>p.id===id); prods[i]={...prods[i],...data}; }
+  else prods.push({id:DB.id(),...data});
+  DB.set('products', prods);
+  closeModal(); toast('Product saved!'); renderProducts();
+}
+function viewBOM(id) {
+  const p = DB.get('products').find(x=>x.id===id);
+  const mats = DB.get('rawmaterials');
+  const rows = (p.bom||[]).map(b=>{
+    const m = mats.find(x=>x.id===b.matId);
+    return `<tr><td>${m?m.name:'Unknown'} ${m&&m.uid?'<span class="id-badge">'+m.uid+'</span>':''}</td><td>${b.qty} ${m?m.unit:''}</td><td class="num">${fmt((m?m.costPrice:0)*b.qty)}</td></tr>`;
+  });
+  const totalCost = (p.bom||[]).reduce((a,b)=>{ const m=mats.find(x=>x.id===b.matId); return a+(m?m.costPrice*b.qty:0); }, 0);
+  openModal(`BOM: ${p.name}`, `
+    <div class="table-wrap"><table><thead><tr><th>Material</th><th>Qty Per Unit</th><th>Cost</th></tr></thead>
+    <tbody>${rows.join('')}</tbody></table></div>
+    <div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:8px;display:flex;justify-content:space-between;">
+      <span>Estimated Production Cost:</span><strong class="num text-red">${fmt(totalCost)}</strong>
+    </div>
+    <div style="margin-top:8px;padding:12px;background:var(--bg);border-radius:8px;display:flex;justify-content:space-between;">
+      <span>Selling Price:</span><strong class="num text-amber">${fmt(p.sellingPrice)}</strong>
+    </div>
+    <div style="margin-top:8px;padding:12px;background:var(--bg);border-radius:8px;display:flex;justify-content:space-between;">
+      <span>Estimated Gross Margin:</span><strong class="num text-green">${fmt(p.sellingPrice - totalCost)} (${Math.round(((p.sellingPrice-totalCost)/Math.max(p.sellingPrice,1))*100)}%)</strong>
+    </div>`,
+    `<button class="btn btn-primary" onclick="openProductForm('${id}');closeModal()">Edit BOM</button>
+     <button class="btn btn-outline" onclick="closeModal()">Close</button>`
+  );
+}
+function deleteProduct(id) {
+  confirmDelete('Delete this product?', () => {
+    DB.set('products', DB.get('products').filter(p=>p.id!==id));
+    toast('Deleted'); navigate('products');
+  });
+}
+
+// ==================== PURCHASES ====================
+function renderPurchases() {
+  const purchases = DB.get('purchases');
+  const suppliers = DB.get('suppliers');
+  const totalBill = purchases.reduce((a,b)=>a+b.total,0);
+  const totalPaid = purchases.reduce((a,b)=>a+b.paid,0);
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="kpi-grid grid-3col-kpi">
+      <div class="kpi blue"><div class="kpi-label">Total Purchased</div><div class="kpi-val">${fmt(totalBill)}</div></div>
+      <div class="kpi green"><div class="kpi-label">Total Paid</div><div class="kpi-val">${fmt(totalPaid)}</div></div>
+      <div class="kpi red"><div class="kpi-label">Outstanding</div><div class="kpi-val">${fmt(totalBill-totalPaid)}</div></div>
+    </div>
+    <div class="section-header">
+      <h3>Purchase Orders (${purchases.length})</h3>
+      <button class="btn btn-primary" onclick="openPurchaseForm()">+ New Purchase</button>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <input type="text" id="pu-search" placeholder="Search supplier, note…" oninput="filterPurchases()">
+        <input type="date" id="pu-from" onchange="filterPurchases()" placeholder="From">
+        <input type="date" id="pu-to" onchange="filterPurchases()" placeholder="To">
+        <select id="pu-sup" onchange="filterPurchases()">
+          <option value="">All Suppliers</option>
+          ${suppliers.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>PO No.</th><th>Date</th><th>Supplier</th><th>Items</th><th>Total</th><th>Paid</th><th>Balance</th><th>Note</th><th>Actions</th></tr></thead>
+        <tbody id="pu-tbody">
+          ${renderPurchaseRows([...purchases].sort((a,b)=>new Date(b.date)-new Date(a.date)))}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+function renderPurchaseRows(purchases) {
+  const suppliers = DB.get('suppliers');
+  if (!purchases.length) return '<tr><td colspan="8"><div class="empty"><div class="empty-icon">🛒</div><p>No purchases found</p></div></td></tr>';
+  return purchases.map(p=>{
+    const sup = suppliers.find(s=>s.id===p.supplierId);
+    const bal = p.total - p.paid;
+    return `<tr>
+      <td><span class="id-badge" style="cursor:pointer" onclick="viewPurchase('${p.id}')">${p.uid||'-'}</span></td>
+      <td>${dateStr(p.date)}</td>
+      <td>${sup?`<span class="id-badge" style="background:rgba(59,130,246,0.1);color:var(--blue)">${sup.uid||''}</span> ${sup.name}`:'-'}</td>
+      <td>${p.items.length} items</td>
+      <td class="num">${fmt(p.total)}</td>
+      <td class="num text-green">${fmt(p.paid)}</td>
+      <td class="num ${bal>0?'text-red':''}">${fmt(bal)}</td>
+      <td class="text-muted">${p.note||'-'}</td>
+      <td><div class="action-row">
+        <button class="btn btn-outline btn-sm" onclick="viewPurchase('${p.id}')">View</button>
+        <button class="btn btn-success btn-sm" onclick="addPurchasePayment('${p.id}')">Pay</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePurchase('${p.id}')">Del</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function filterPurchases() {
+  let purch = [...DB.get('purchases')].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const q = (document.getElementById('pu-search').value||'').toLowerCase();
+  const from = document.getElementById('pu-from').value;
+  const to = document.getElementById('pu-to').value;
+  const supId = document.getElementById('pu-sup').value;
+  if (q) purch = purch.filter(p=>{const s=DB.get('suppliers').find(x=>x.id===p.supplierId);return (s&&s.name.toLowerCase().includes(q))||(p.note||'').toLowerCase().includes(q);});
+  if (from) purch = purch.filter(p=>p.date>=from);
+  if (to) purch = purch.filter(p=>p.date<=to);
+  if (supId) purch = purch.filter(p=>p.supplierId===supId);
+  document.getElementById('pu-tbody').innerHTML = renderPurchaseRows(purch);
+}
+
+function openPurchaseForm() {
+  const suppliers = DB.get('suppliers');
+  const mats = DB.get('rawmaterials');
+  if (!suppliers.length) { toast('Add suppliers first','error'); return; }
+  if (!mats.length) { toast('Add raw materials first','error'); return; }
+  const matOptions = mats.map(m=>`<option value="${m.id}" data-cost="${m.costPrice}">${m.uid?'['+m.uid+'] ':''}${m.name} (${m.unit})</option>`).join('');
+  window._matOptionsHtml = matOptions;
+  openModal('New Purchase Order', `
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input id="f-pudate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label>Supplier</label><select id="f-pusup">${suppliers.map(s=>`<option value="${s.id}">${s.uid?'['+s.uid+'] ':''}${s.name}</option>`).join('')}</select></div>
+      <div class="form-group full"><label>Note</label><input id="f-punote" placeholder="Optional note"></div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <label>Items Purchased</label>
+        <button class="btn btn-outline btn-sm" onclick="addPurchaseRow()">+ Add Item</button>
+      </div>
+      <div class="item-rows">
+        <div class="item-row-header"><span>Material</span><span>Qty</span><span>Rate (Rs.)</span><span>Amount</span><span></span></div>
+        <div id="pu-rows"><div class="item-row">
+          <select onchange="autofillRate(this)">${matOptions}</select>
+          <input type="number" placeholder="Qty" min="0" onchange="calcPurchaseTotal()" oninput="calcPurchaseTotal()">
+          <input type="number" placeholder="Rate" min="0" onchange="calcPurchaseTotal()" oninput="calcPurchaseTotal()" class="rate-inp">
+          <span class="row-total num">Rs. 0</span>
+          <button class="remove-btn" onclick="removePuRow(this)">✕</button>
+        </div></div>
+        <div class="total-row"><span>Total:</span><strong class="num" id="pu-total">Rs. 0</strong></div>
+      </div>
+    </div>
+    <div class="form-grid" style="margin-top:16px">
+      <div class="form-group"><label>Amount Paid Now (Rs.)</label><input id="f-pupaid" type="number" value="0"></div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="savePurchase()">Save Purchase</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+  const firstSel = document.querySelector('#pu-rows select');
+  if(firstSel) autofillRate(firstSel);
+}
+function autofillRate(sel) {
+  const mats = DB.get('rawmaterials');
+  const m = mats.find(x=>x.id===sel.value);
+  const row = sel.closest('.item-row');
+  if (m) row.querySelector('.rate-inp').value = m.costPrice;
+  calcPurchaseTotal();
+}
+function calcPurchaseTotal() {
+  let total = 0;
+  document.querySelectorAll('#pu-rows .item-row').forEach(row => {
+    const qty = parseFloat(row.querySelectorAll('input')[0].value)||0;
+    const rate = parseFloat(row.querySelectorAll('input')[1].value)||0;
+    const amt = qty*rate;
+    row.querySelector('.row-total').textContent = fmt(amt);
+    total += amt;
+  });
+  const el = document.getElementById('pu-total');
+  if (el) el.textContent = fmt(total);
+}
+function addPurchaseRow() {
+  const container = document.getElementById('pu-rows');
+  const div = document.createElement('div');
+  div.className = 'item-row';
+  div.innerHTML = `
+    <select onchange="autofillRate(this)">${window._matOptionsHtml}</select>
+    <input type="number" placeholder="Qty" min="0" onchange="calcPurchaseTotal()" oninput="calcPurchaseTotal()">
+    <input type="number" placeholder="Rate" min="0" onchange="calcPurchaseTotal()" oninput="calcPurchaseTotal()" class="rate-inp">
+    <span class="row-total num">Rs. 0</span>
+    <button class="remove-btn" onclick="removePuRow(this)">✕</button>`;
+  container.appendChild(div);
+  autofillRate(div.querySelector('select'));
+}
+function removePuRow(btn) { btn.closest('.item-row').remove(); calcPurchaseTotal(); }
+function savePurchase() {
+  const rows = document.querySelectorAll('#pu-rows .item-row');
+  const items = Array.from(rows).map(r=>{
+    const inps = r.querySelectorAll('input');
+    return { matId:r.querySelector('select').value, qty:parseFloat(inps[0].value)||0, rate:parseFloat(inps[1].value)||0 };
+  }).filter(x=>x.qty>0);
+  if (!items.length) { toast('Add at least one item','error'); return; }
+  const total = items.reduce((a,b)=>a+b.qty*b.rate,0);
+  const paid = parseFloat(document.getElementById('f-pupaid').value)||0;
+  const suppId = document.getElementById('f-pusup').value;
+  const mats = DB.get('rawmaterials');
+  items.forEach(it=>{ const i=mats.findIndex(m=>m.id===it.matId); if(i>=0) mats[i].qty += it.qty; });
+  DB.set('rawmaterials', mats);
+  const suppliers = DB.get('suppliers');
+  const si = suppliers.findIndex(s=>s.id===suppId);
+  if(si>=0) suppliers[si].balance = (suppliers[si].balance||0) + (total-paid);
+  DB.set('suppliers', suppliers);
+  const purchases = DB.get('purchases');
+  const puid = genPurchaseUID();
+  purchases.push({ id:DB.id(), uid:puid, date:document.getElementById('f-pudate').value, supplierId:suppId, items, total, paid, note:document.getElementById('f-punote').value });
+  DB.set('purchases', purchases);
+  if (paid > 0) {
+    const sup = suppliers.find(s=>s.id===suppId);
+    const cf = DB.get('cashflow');
+    cf.push({id:DB.id(), date:document.getElementById('f-pudate').value, type:'out', amount:paid, category:'Supplier Payment', ref:sup?sup.name:'', note:'Purchase payment'});
+    DB.set('cashflow', cf);
+  }
+  closeModal(); toast('Purchase saved! Stock updated.'); renderPurchases();
+}
+function addPurchasePayment(id) {
+  const p = DB.get('purchases').find(x=>x.id===id);
+  const sup = DB.get('suppliers').find(s=>s.id===p.supplierId);
+  const bal = p.total - p.paid;
+  openModal('Record Payment', `
+    <div class="alert info">Balance due to <strong>${sup?sup.name:'Supplier'}</strong>: <strong>${fmt(bal)}</strong></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Payment Date</label><input id="f-paydate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label>Amount (Rs.)</label><input id="f-payamt" type="number" max="${bal}" value="${bal}"></div>
+      <div class="form-group full"><label>Note</label><input id="f-paynote" placeholder="e.g. Bank transfer"></div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="savePurchasePayment('${id}')">Record Payment</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+function savePurchasePayment(id) {
+  const amt = parseFloat(document.getElementById('f-payamt').value)||0;
+  if (!amt) { toast('Enter payment amount','error'); return; }
+  const purchases = DB.get('purchases');
+  const i = purchases.findIndex(p=>p.id===id);
+  purchases[i].paid = Math.min(purchases[i].total, purchases[i].paid + amt);
+  DB.set('purchases', purchases);
+  const suppliers = DB.get('suppliers');
+  const si = suppliers.findIndex(s=>s.id===purchases[i].supplierId);
+  if(si>=0) suppliers[si].balance = Math.max(0, (suppliers[si].balance||0) - amt);
+  DB.set('suppliers', suppliers);
+  const sup = suppliers.find(s=>s.id===purchases[i].supplierId);
+  const cf = DB.get('cashflow');
+  cf.push({id:DB.id(), date:document.getElementById('f-paydate').value, type:'out', amount:amt, category:'Supplier Payment', ref:sup?sup.name:'', note:document.getElementById('f-paynote').value});
+  DB.set('cashflow', cf);
+  closeModal(); toast('Payment recorded!'); renderPurchases();
+}
+function viewPurchase(id) {
+  const p = DB.get('purchases').find(x=>x.id===id);
+  const sup = DB.get('suppliers').find(s=>s.id===p.supplierId);
+  const mats = DB.get('rawmaterials');
+  openModal('Purchase Details', `
+    <div class="detail-grid">
+      <div><span class="text-muted">Date: </span>${dateStr(p.date)}</div>
+      <div><span class="text-muted">Supplier: </span><strong>${sup?sup.name:'-'}</strong>${sup&&sup.uid?' <span class="id-badge">'+sup.uid+'</span>':''}</div>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Material</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+    <tbody>${p.items.map(it=>{ const m=mats.find(x=>x.id===it.matId); return `<tr><td>${m?m.name:'?'}</td><td>${it.qty} ${m?m.unit:''}</td><td class="num">${fmt(it.rate)}</td><td class="num">${fmt(it.qty*it.rate)}</td></tr>`; }).join('')}</tbody></table></div>
+    <div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Total:</span><strong>${fmt(p.total)}</strong></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Paid:</span><strong class="text-green">${fmt(p.paid)}</strong></div>
+      <div style="display:flex;justify-content:space-between"><span>Balance:</span><strong class="text-red">${fmt(p.total-p.paid)}</strong></div>
+    </div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Close</button>`
+  );
+}
+function deletePurchase(id) {
+  confirmDelete('Delete this purchase order?', () => {
+    DB.set('purchases', DB.get('purchases').filter(p=>p.id!==id));
+    toast('Deleted'); navigate('purchases');
+  });
+}
+
+// ==================== SALES ====================
+function renderSales() {
+  const sales = DB.get('sales');
+  const customers = DB.get('customers');
+  const totalBill = sales.reduce((a,b)=>a+b.total,0);
+  const totalPaid = sales.reduce((a,b)=>a+b.paid,0);
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="kpi-grid grid-3col-kpi">
+      <div class="kpi amber"><div class="kpi-label">Total Sales</div><div class="kpi-val">${fmt(totalBill)}</div></div>
+      <div class="kpi green"><div class="kpi-label">Received</div><div class="kpi-val">${fmt(totalPaid)}</div></div>
+      <div class="kpi blue"><div class="kpi-label">Receivable</div><div class="kpi-val">${fmt(totalBill-totalPaid)}</div></div>
+    </div>
+    <div class="section-header">
+      <h3>Sales / Invoices (${sales.length})</h3>
+      <button class="btn btn-primary" onclick="openSaleForm()">+ New Sale</button>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <input type="text" id="sl-search" placeholder="Search by Bill No., customer…" oninput="filterSales()">
+        <input type="date" id="sl-from" onchange="filterSales()" placeholder="From">
+        <input type="date" id="sl-to" onchange="filterSales()" placeholder="To">
+        <select id="sl-cust" onchange="filterSales()">
+          <option value="">All Customers</option>
+          ${customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+        </select>
+        <select id="sl-status" onchange="filterSales()">
+          <option value="">All Status</option>
+          <option value="partial">Partial / Unpaid</option>
+          <option value="paid">Fully Paid</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Bill No.</th><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Received</th><th>Balance</th><th>Actions</th></tr></thead>
+        <tbody id="sl-tbody">
+          ${renderSaleRows([...sales].sort((a,b)=>new Date(b.date)-new Date(a.date)))}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+function renderSaleRows(sales) {
+  const customers = DB.get('customers');
+  if (!sales.length) return '<tr><td colspan="8"><div class="empty"><div class="empty-icon">💸</div><p>No sales found</p></div></td></tr>';
+  return sales.map(s=>{
+    const cust = customers.find(c=>c.id===s.customerId);
+    const bal = s.total - s.paid;
+    return `<tr>
+      <td><span class="id-badge">${s.uid||'-'}</span></td>
+      <td>${dateStr(s.date)}</td>
+      <td>${cust?`<span class="id-badge" style="background:rgba(16,185,129,0.1);color:var(--green)">${cust.uid||''}</span> ${cust.name}`:'-'}</td>
+      <td>${s.items.length} items</td>
+      <td class="num">${fmt(s.total)}</td>
+      <td class="num text-green">${fmt(s.paid)}</td>
+      <td class="num ${bal>0?'text-amber':''}">${fmt(bal)}</td>
+      <td><div class="action-row">
+        <button class="btn btn-outline btn-sm" onclick="viewSale('${s.id}')">View</button>
+        <button class="btn btn-info btn-sm" onclick="printBill('${s.id}')">Print</button>
+        <button class="btn btn-success btn-sm" onclick="addSalePayment('${s.id}')">Receive</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSale('${s.id}')">Del</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function filterSales() {
+  let sales = [...DB.get('sales')].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const q = (document.getElementById('sl-search').value||'').toLowerCase();
+  const from = document.getElementById('sl-from').value;
+  const to = document.getElementById('sl-to').value;
+  const custId = document.getElementById('sl-cust').value;
+  const status = document.getElementById('sl-status').value;
+  if (q) sales = sales.filter(s=>{const c=DB.get('customers').find(x=>x.id===s.customerId);return (c&&c.name.toLowerCase().includes(q))||(s.uid||'').toLowerCase().includes(q);});
+  if (from) sales = sales.filter(s=>s.date>=from);
+  if (to) sales = sales.filter(s=>s.date<=to);
+  if (custId) sales = sales.filter(s=>s.customerId===custId);
+  if (status==='partial') sales = sales.filter(s=>s.total-s.paid>0);
+  if (status==='paid') sales = sales.filter(s=>s.total-s.paid<=0);
+  document.getElementById('sl-tbody').innerHTML = renderSaleRows(sales);
+}
+
+function openQuickSale() { openSaleForm(); }
+function openSaleFormWithCustomer(custId) {
+  const customers = DB.get('customers');
+  const prods = DB.get('products');
+  if (!customers.length) { toast('Add customers first','error'); return; }
+  if (!prods.length) { toast('Add products first','error'); return; }
+  const prodOptions = prods.map(p=>`<option value="${p.id}" data-price="${p.sellingPrice}">${p.uid?'['+p.uid+'] ':''}${p.name}</option>`).join('');
+  window._prodOptionsHtml = prodOptions;
+  const billNo = generateBillNumber();
+  openModal('New Sale Invoice', `
+    <div class="form-grid">
+      <div class="form-group"><label>Bill No. (Auto)</label><input id="f-sluid" value="${billNo}" readonly style="opacity:.6"></div>
+      <div class="form-group"><label>Date</label><input id="f-sldate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group full"><label>Customer / School <span style="font-size:11px;color:var(--muted);font-weight:400">(type new name to auto-add)</span></label>
+        <div style="position:relative">
+          <input id="f-slcust-text" list="cust-datalist" placeholder="Search or type new customer name…" autocomplete="off" oninput="handleCustomerInput()" style="width:100%" value="${custId ? (customers.find(c=>c.id===custId)||{name:''}).name : ''}">
+          <datalist id="cust-datalist">${customers.map(c=>`<option value="${c.name}" data-id="${c.id}">`).join('')}</datalist>
+          <input type="hidden" id="f-slcust" value="${custId||''}">
+          <div id="new-cust-indicator" style="display:none;font-size:11px;color:var(--green);margin-top:4px">✅ New customer will be auto-added to customers list</div>
+        </div>
+      </div>
+      <div class="form-group full"><label>Note</label><input id="f-slnote" placeholder="Optional note"></div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <label>Items Sold</label>
+        <button class="btn btn-outline btn-sm" onclick="addSaleRow()">+ Add Item</button>
+      </div>
+      <div class="item-rows">
+        <div class="item-row-header"><span>Product</span><span>Qty</span><span>Rate (Rs.)</span><span>Amount</span><span></span></div>
+        <div id="sl-rows"><div class="item-row">
+          <select onchange="autofillSaleRate(this)">${prodOptions}</select>
+          <input type="number" placeholder="Qty" min="0" oninput="calcSaleTotal()">
+          <input type="number" placeholder="Rate" min="0" oninput="calcSaleTotal()" class="rate-inp">
+          <span class="row-total num">Rs. 0</span>
+          <button class="remove-btn" onclick="this.closest('.item-row').remove();calcSaleTotal()">✕</button>
+        </div></div>
+        <div class="total-row"><span>Total:</span><strong class="num" id="sl-total">Rs. 0</strong></div>
+      </div>
+    </div>
+    <div class="form-grid" style="margin-top:16px">
+      <div class="form-group"><label>Amount Received Now (Rs.)</label><input id="f-slpaid" type="number" value="0"></div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="saveSale()">Save Invoice</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+  const firstSel = document.querySelector('#sl-rows select');
+  if (firstSel) autofillSaleRate(firstSel);
+}
+function handleCustomerInput() {
+  const val = document.getElementById('f-slcust-text').value.trim();
+  const customers = DB.get('customers');
+  const match = customers.find(c => c.name.toLowerCase() === val.toLowerCase());
+  const hiddenInput = document.getElementById('f-slcust');
+  const indicator = document.getElementById('new-cust-indicator');
+  if (match) {
+    hiddenInput.value = match.id;
+    if (indicator) indicator.style.display = 'none';
+  } else if (val.length > 0) {
+    hiddenInput.value = '__new__:' + val;
+    if (indicator) indicator.style.display = 'block';
+  } else {
+    hiddenInput.value = '';
+    if (indicator) indicator.style.display = 'none';
+  }
+}
+function openSaleForm() { openSaleFormWithCustomer(''); }
+
+function genPurchaseUID() {
+  const purchases = DB.get('purchases');
+  const num = purchases.length + 1;
+  return 'PO-' + String(num).padStart(4, '0');
+}
+function generateBillNumber() {
+  const sales = DB.get('sales');
+  const nums = sales.map(s=>parseInt((s.uid||'').replace(/\D/g,''))||0);
+  const next = (nums.length ? Math.max(...nums) : 0) + 1;
+  return 'INV-' + String(next).padStart(5,'0');
+}
+function autofillSaleRate(sel) {
+  const prods = DB.get('products');
+  const p = prods.find(x=>x.id===sel.value);
+  const row = sel.closest('.item-row');
+  if (p) row.querySelector('.rate-inp').value = p.sellingPrice;
+  calcSaleTotal();
+}
+function calcSaleTotal() {
+  let total = 0;
+  document.querySelectorAll('#sl-rows .item-row').forEach(row=>{
+    const inps = row.querySelectorAll('input');
+    const amt = (parseFloat(inps[0].value)||0)*(parseFloat(inps[1].value)||0);
+    row.querySelector('.row-total').textContent = fmt(amt);
+    total += amt;
+  });
+  const el = document.getElementById('sl-total');
+  if (el) el.textContent = fmt(total);
+}
+function addSaleRow() {
+  const container = document.getElementById('sl-rows');
+  const div = document.createElement('div');
+  div.className = 'item-row';
+  div.innerHTML = `<select onchange="autofillSaleRate(this)">${window._prodOptionsHtml}</select><input type="number" placeholder="Qty" min="0" oninput="calcSaleTotal()"><input type="number" placeholder="Rate" min="0" oninput="calcSaleTotal()" class="rate-inp"><span class="row-total num">Rs. 0</span><button class="remove-btn" onclick="this.closest('.item-row').remove();calcSaleTotal()">✕</button>`;
+  container.appendChild(div);
+  autofillSaleRate(div.querySelector('select'));
+}
+function saveSale() {
+  // Auto-add new customer if needed
+  let custVal = document.getElementById('f-slcust').value;
+  if (custVal && custVal.startsWith('__new__:')) {
+    const newName = custVal.replace('__new__:', '').trim();
+    if (newName) {
+      const customers = DB.get('customers');
+      const newCust = {id: DB.id(), uid: genUID('C'), name: newName, phone:'', city:'', address:'', balance:0};
+      customers.push(newCust);
+      DB.set('customers', customers);
+      document.getElementById('f-slcust').value = newCust.id;
+      custVal = newCust.id;
+      toast('Customer "' + newName + '" auto-added!');
+    }
+  }
+  const rows = document.querySelectorAll('#sl-rows .item-row');
+  const items = Array.from(rows).map(r=>{
+    const inps = r.querySelectorAll('input');
+    return { prodId:r.querySelector('select').value, qty:parseFloat(inps[0].value)||0, rate:parseFloat(inps[1].value)||0 };
+  }).filter(x=>x.qty>0);
+  if (!items.length) { toast('Add at least one item','error'); return; }
+  const total = items.reduce((a,b)=>a+b.qty*b.rate,0);
+  const paid = parseFloat(document.getElementById('f-slpaid').value)||0;
+  const custId = document.getElementById('f-slcust').value;
+  const uid = document.getElementById('f-sluid').value;
+  const prods = DB.get('products');
+  items.forEach(it=>{ const i=prods.findIndex(p=>p.id===it.prodId); if(i>=0) prods[i].stock = Math.max(0,(prods[i].stock||0)-it.qty); });
+  DB.set('products', prods);
+  const customers = DB.get('customers');
+  const ci = customers.findIndex(c=>c.id===custId);
+  if(ci>=0) customers[ci].balance = (customers[ci].balance||0) + (total-paid);
+  DB.set('customers', customers);
+  const sales = DB.get('sales');
+  const saleId = DB.id();
+  sales.push({ id:saleId, uid, date:document.getElementById('f-sldate').value, customerId:custId, items, total, paid, note:document.getElementById('f-slnote').value });
+  DB.set('sales', sales);
+  if (paid > 0) {
+    const cust = customers.find(c=>c.id===custId);
+    const cf = DB.get('cashflow');
+    cf.push({id:DB.id(), date:document.getElementById('f-sldate').value, type:'in', amount:paid, category:'Customer Receipt', ref:cust?cust.name:'', note:'Sale receipt - ' + uid});
+    DB.set('cashflow', cf);
+  }
+  closeModal(); toast('Invoice saved!');
+  setTimeout(()=>{ if(confirm('Print this invoice?')) printBill(saleId); }, 300);
+  renderSales();
+}
+function addSalePayment(id) {
+  const s = DB.get('sales').find(x=>x.id===id);
+  const cust = DB.get('customers').find(c=>c.id===s.customerId);
+  const bal = s.total - s.paid;
+  openModal('Receive Payment', `
+    <div class="alert info">Bill <strong>${s.uid||''}</strong> — Balance from <strong>${cust?cust.name:'Customer'}</strong>: <strong>${fmt(bal)}</strong></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input id="f-rcvdate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label>Amount (Rs.)</label><input id="f-rcvamt" type="number" max="${bal}" value="${bal}"></div>
+      <div class="form-group full"><label>Note</label><input id="f-rcvnote" placeholder="e.g. Cash received"></div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="saveSalePayment('${id}')">Record Receipt</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+function saveSalePayment(id) {
+  const amt = parseFloat(document.getElementById('f-rcvamt').value)||0;
+  if (!amt) { toast('Enter amount','error'); return; }
+  const sales = DB.get('sales');
+  const i = sales.findIndex(s=>s.id===id);
+  sales[i].paid = Math.min(sales[i].total, sales[i].paid+amt);
+  DB.set('sales', sales);
+  const customers = DB.get('customers');
+  const ci = customers.findIndex(c=>c.id===sales[i].customerId);
+  if(ci>=0) customers[ci].balance = Math.max(0,(customers[ci].balance||0)-amt);
+  DB.set('customers', customers);
+  const cust = customers.find(c=>c.id===sales[i].customerId);
+  const cf = DB.get('cashflow');
+  cf.push({id:DB.id(), date:document.getElementById('f-rcvdate').value, type:'in', amount:amt, category:'Customer Receipt', ref:cust?cust.name:'', note:document.getElementById('f-rcvnote').value});
+  DB.set('cashflow', cf);
+  closeModal(); toast('Receipt recorded!'); renderSales();
+}
+function viewSale(id) {
+  const s = DB.get('sales').find(x=>x.id===id);
+  const cust = DB.get('customers').find(c=>c.id===s.customerId);
+  const prods = DB.get('products');
+  openModal(`Invoice: ${s.uid||'-'}`, `
+    <div class="detail-grid">
+      <div><span class="text-muted">Bill No.: </span><strong>${s.uid||'-'}</strong></div>
+      <div><span class="text-muted">Date: </span>${dateStr(s.date)}</div>
+      <div><span class="text-muted">Customer: </span><strong>${cust?cust.name:'-'}</strong>${cust&&cust.uid?' <span class="id-badge">'+cust.uid+'</span>':''}</div>
+      <div><span class="text-muted">Note: </span>${s.note||'-'}</div>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+    <tbody>${s.items.map(it=>{ const p=prods.find(x=>x.id===it.prodId); return `<tr><td>${p?p.name:'?'}</td><td>${it.qty}</td><td class="num">${fmt(it.rate)}</td><td class="num">${fmt(it.qty*it.rate)}</td></tr>`; }).join('')}</tbody></table></div>
+    <div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Total:</span><strong>${fmt(s.total)}</strong></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Received:</span><strong class="text-green">${fmt(s.paid)}</strong></div>
+      <div style="display:flex;justify-content:space-between"><span>Balance:</span><strong class="text-amber">${fmt(s.total-s.paid)}</strong></div>
+    </div>`,
+    `<button class="btn btn-info" onclick="printBill('${id}');closeModal()">🖨️ Print Invoice</button>
+     <button class="btn btn-outline" onclick="closeModal()">Close</button>`
+  );
+}
+function printBill(id) {
+  const s = DB.get('sales').find(x=>x.id===id);
+  const cust = DB.get('customers').find(c=>c.id===s.customerId);
+  const prods = DB.get('products');
+  const rows = s.items.map(it=>{ const p=prods.find(x=>x.id===it.prodId); return `<tr><td>${p?p.name:'?'}</td><td style="text-align:center">${it.qty}</td><td style="text-align:right">Rs. ${Number(it.rate).toLocaleString('en-PK')}</td><td style="text-align:right">Rs. ${Number(it.qty*it.rate).toLocaleString('en-PK')}</td></tr>`; }).join('');
+  // Generate barcode SVG using Code39
+  function makeBarcode(text) {
+    const C39 = {'0':'nnnwwnwnn','1':'wnnwnnnnw','2':'nnwwnnnnw','3':'wnwwnnnnn','4':'nnnwwnnnw','5':'wnnwwnnnn','6':'nnwwwnnnn','7':'nnnwnnwnw','8':'wnnwnnwnn','9':'nnwwnnwnn','A':'wnnnnwnnw','B':'nnwnnwnnw','C':'wnwnnwnnn','D':'nnnnwwnnw','E':'wnnnwwnnn','F':'nnwnwwnnn','G':'nnnnnwwnw','H':'wnnnnwwnn','I':'nnwnnwwnn','J':'nnnnwwwnn','K':'wnnnnnnww','L':'nnwnnnnww','M':'wnwnnnnwn','N':'nnnnwnnww','O':'wnnnwnnwn','P':'nnwnwnnwn','Q':'nnnnnnwww','R':'wnnnnnwwn','S':'nnwnnnwwn','T':'nnnnwnwwn','U':'wwnnnnnnw','V':'nwwnnnnnw','W':'wwwnnnnnn','X':'nwnnwnnnw','Y':'wwnnwnnnn','Z':'nwwnwnnnn','-':'nwnnnnwnw',' ':'wwnnnnwnn','*':'nwnnwnwnn','/':'nwwnnnwnn','+':'nwnnwnwnn','%':'nnnwnwnwn','.':'wwnnnnwnn','$':'nwwnwwnnn'};
+    const chars = ('*' + text.toUpperCase() + '*').split('');
+    let bars = [], x = 0, narrow = 2, wide = 5, gap = 2;
+    chars.forEach((ch,ci) => {
+      const pat = C39[ch] || C39[' '];
+      if (!pat) return;
+      pat.split('').forEach((b,i) => {
+        const w = b==='w' ? wide : narrow;
+        if (i%2===0) bars.push({x, w});
+        x += w;
+        if (i%2===1) x += gap;
+      });
+      if (ci < chars.length-1) x += gap;
+    });
+    const totalW = x, h = 50;
+    const svgBars = bars.map(b=>`<rect x="${b.x}" y="0" width="${b.w}" height="${h}" fill="#000"/>`).join('');
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${h+18}" viewBox="0 0 ${totalW} ${h+18}">${svgBars}<text x="${totalW/2}" y="${h+13}" text-anchor="middle" font-family="monospace" font-size="10">${text}</text></svg>`;
+  }
+  const barcodeHtml = makeBarcode(s.uid||'INV');
+  const html = `
+    <div class="bill-print" style="font-family:'Segoe UI',Arial,sans-serif;max-width:800px;margin:0 auto;padding:0;">
+      <!-- HEADER BAND -->
+      <div style="background:#1a1a2e;color:#fff;padding:20px 28px;display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:24px;font-weight:900;letter-spacing:1px;color:#f59e0b;">AK Copy House</div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:3px;">Multan, Pakistan</div>
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">Stationery & Copy House</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:20px;font-weight:800;color:#f59e0b;letter-spacing:1px;">TAX INVOICE</div>
+          <div style="font-size:13px;font-weight:700;color:#fff;margin-top:4px;">${s.uid||'-'}</div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:3px;">Date: ${dateStr(s.date)}</div>
+        </div>
+      </div>
+      <!-- BILL TO / BARCODE ROW -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:16px 28px;background:#f8fafc;border-bottom:2px solid #e2e8f0;">
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:4px;">Bill To</div>
+          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">${cust?cust.name:'Walk-in Customer'}</div>
+          ${cust&&cust.uid?`<div style="font-size:11px;color:#64748b;margin-top:2px;">Customer ID: ${cust.uid}</div>`:''}
+          ${cust&&cust.phone?`<div style="font-size:11px;color:#64748b;">Phone: ${cust.phone}</div>`:''}
+          ${cust&&cust.city?`<div style="font-size:11px;color:#64748b;">City: ${cust.city}</div>`:''}
+        </div>
+        <div style="text-align:right;">${barcodeHtml}</div>
+      </div>
+      <!-- ITEMS TABLE -->
+      <div style="padding:0 28px;">
+        <table style="width:100%;border-collapse:collapse;margin-top:0;">
+          <thead>
+            <tr style="background:#1a1a2e;color:#fff;">
+              <th style="padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.8px;text-transform:uppercase;">#</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.8px;text-transform:uppercase;">Description</th>
+              <th style="padding:10px 12px;text-align:center;font-size:11px;letter-spacing:.8px;text-transform:uppercase;">Qty</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;letter-spacing:.8px;text-transform:uppercase;">Unit Rate</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;letter-spacing:.8px;text-transform:uppercase;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>${s.items.map((it,idx)=>{ const p=prods.find(x=>x.id===it.prodId); return `<tr style="border-bottom:1px solid #e2e8f0;background:${idx%2?'#f8fafc':'#fff'};"><td style="padding:9px 12px;font-size:12px;color:#64748b;">${idx+1}</td><td style="padding:9px 12px;font-size:13px;font-weight:500;">${p?p.name:'Product'}</td><td style="padding:9px 12px;text-align:center;font-size:13px;">${it.qty}</td><td style="padding:9px 12px;text-align:right;font-size:13px;">Rs. ${Number(it.rate).toLocaleString('en-PK')}</td><td style="padding:9px 12px;text-align:right;font-size:13px;font-weight:600;">Rs. ${Number(it.qty*it.rate).toLocaleString('en-PK')}</td></tr>`; }).join('')}</tbody>
+        </table>
+      </div>
+      <!-- TOTALS -->
+      <div style="display:flex;justify-content:flex-end;padding:12px 28px 0;">
+        <div style="width:280px;">
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #e2e8f0;font-size:13px;">
+            <span style="color:#64748b;">Sub-total</span><span style="font-weight:600;">Rs. ${Number(s.total).toLocaleString('en-PK')}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #e2e8f0;font-size:13px;">
+            <span style="color:#10b981;">Amount Received</span><span style="font-weight:600;color:#10b981;">Rs. ${Number(s.paid).toLocaleString('en-PK')}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:10px 12px;background:#1a1a2e;border-radius:6px;margin-top:6px;">
+            <span style="color:#f59e0b;font-weight:700;font-size:14px;">Balance Due</span>
+            <span style="color:#f59e0b;font-weight:800;font-size:15px;">Rs. ${Number(s.total-s.paid).toLocaleString('en-PK')}</span>
+          </div>
+        </div>
+      </div>
+      ${s.note ? `<div style="margin:12px 28px 0;padding:10px 12px;background:#fffbeb;border-left:3px solid #f59e0b;font-size:12px;color:#78350f;"><strong>Note:</strong> ${s.note}</div>` : ''}
+      <!-- FOOTER -->
+      <div style="margin-top:20px;padding:14px 28px;background:#f1f5f9;border-top:2px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:11px;color:#64748b;">
+          <strong style="color:#1a1a2e;">AK Copy House Multan</strong><br>
+          This is a computer-generated invoice. No signature required.
+        </div>
+        <div style="font-size:11px;color:#64748b;text-align:right;">
+          Thank you for your business! 🙏<br>
+          <span style="color:#f59e0b;font-weight:600;">AK Copy House</span>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('print-area').innerHTML = html;
+  window.print();
+}
+function deleteSale(id) {
+  confirmDelete('Delete this sale invoice?', () => {
+    DB.set('sales', DB.get('sales').filter(s=>s.id!==id));
+    toast('Deleted'); navigate('sales');
+  });
+}
+
+// ==================== PRODUCTION ====================
+function renderProduction() {
+  const prod = DB.get('production');
+  const prods = DB.get('products');
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="alert info mb-16">
+      <strong>Production Module:</strong> Each production run consumes raw materials from inventory (per BOM) and adds to finished goods stock.
+      Products with editable BOM can be configured under the <a href="#" onclick="navigate('products')" style="color:var(--amber)">Products</a> section.
+      <br><br><strong>📋 How Production Works:</strong><br>
+      1. Define your products with a <em>Bill of Materials (BOM)</em> — which raw materials are needed per unit.<br>
+      2. Click <strong>"+ New Production Run"</strong> to record how many units were produced on a given day.<br>
+      3. The system automatically <strong>deducts raw materials</strong> from inventory based on the BOM.<br>
+      4. Produced units are <strong>added to the product's finished goods stock</strong>.<br>
+      5. You can then create <strong>Sale Invoices</strong> from that finished stock.<br>
+      <em style="color:var(--muted)">Example: If producing 100 "Exercise Books" requires 2kg paper + 1 cover sheet each, a run of 100 will deduct 200kg paper + 100 cover sheets from raw materials and add 100 books to stock.</em>
+    </div>
+    <div class="section-header">
+      <h3>Production Runs (${prod.length})</h3>
+      <button class="btn btn-primary" onclick="openProductionForm()">+ New Production Run</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Product ID</th><th>Product</th><th>Qty Produced</th><th>Materials Used</th><th>Note</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${prod.length ? [...prod].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(pr=>{
+            const p = prods.find(x=>x.id===pr.productId);
+            const matsSummary = p ? (p.bom||[]).map(b=>{ const m=DB.get('rawmaterials').find(x=>x.id===b.matId); return m?`${m.name}: ${b.qty*pr.qty} ${m.unit}`:''; }).filter(Boolean).join(', ') : '-';
+            return `<tr>
+              <td>${dateStr(pr.date)}</td>
+              <td>${p&&p.uid?'<span class="id-badge">'+p.uid+'</span>':'-'}</td>
+              <td>📓 ${p?p.name:'Unknown'}</td>
+              <td class="num text-green">${fmtNum(pr.qty)} units</td>
+              <td class="text-muted" style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${matsSummary}</td>
+              <td class="text-muted">${pr.note||'-'}</td>
+              <td><button class="btn btn-danger btn-sm" onclick="deleteProduction('${pr.id}')">Delete</button></td>
+            </tr>`;
+          }).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">⚙️</div><p>No production runs yet</p></div></td></tr>'}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+function openProductionForm() {
+  const prods = DB.get('products').filter(p=>(p.bom||[]).length>0);
+  const allProds = DB.get('products');
+  if (!allProds.length) { toast('Add products first','error'); return; }
+  openModal('New Production Run', `
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input id="f-prdate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label>Product</label><select id="f-prprod" onchange="showBOMPreview()">${allProds.map(p=>`<option value="${p.id}">${p.uid?'['+p.uid+'] ':''}${p.name}${(p.bom||[]).length===0?' (no BOM)':''}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Quantity to Produce</label><input id="f-prqty" type="number" min="1" value="100" oninput="showBOMPreview()"></div>
+      <div class="form-group full"><label>Note</label><input id="f-prnote" placeholder="e.g. Weekly production batch"></div>
+    </div>
+    <div id="bom-preview" style="margin-top:14px"></div>
+    <div class="alert warning mt-16">⚠️ Production will consume raw materials per BOM and add to finished stock.</div>`,
+    `<button class="btn btn-primary" onclick="saveProduction()">Run Production</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+  setTimeout(showBOMPreview, 100);
+}
+function showBOMPreview() {
+  const selEl = document.getElementById('f-prprod');
+  const qtyEl = document.getElementById('f-prqty');
+  const previewEl = document.getElementById('bom-preview');
+  if (!selEl || !previewEl) return;
+  const prod = DB.get('products').find(p=>p.id===selEl.value);
+  const qty = parseFloat(qtyEl?.value)||1;
+  if (!prod || !(prod.bom||[]).length) { previewEl.innerHTML = '<div class="alert warning">This product has no BOM configured. Go to Products to add BOM.</div>'; return; }
+  const rows = (prod.bom||[]).map(b=>{ const m=DB.get('rawmaterials').find(x=>x.id===b.matId); const need=b.qty*qty; const ok=m&&m.qty>=need; return `<tr><td>${m?m.name:'?'}</td><td>${b.qty} / unit</td><td class="num">${fmtNum(need)} ${m?m.unit:''}</td><td class="num">${m?fmtNum(m.qty):'-'}</td><td><span class="tag ${ok?'green':'red'}">${ok?'OK':'Insufficient'}</span></td></tr>`; }).join('');
+  previewEl.innerHTML = `<h4 style="font-size:13px;color:var(--light);margin-bottom:8px">BOM Preview — ${qty} units</h4><div class="table-wrap"><table><thead><tr><th>Material</th><th>Per Unit</th><th>Required</th><th>In Stock</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function saveProduction() {
+  const prodId = document.getElementById('f-prprod').value;
+  const qty = parseFloat(document.getElementById('f-prqty').value)||0;
+  if (!qty) { toast('Enter quantity','error'); return; }
+  const prod = DB.get('products').find(p=>p.id===prodId);
+  const mats = DB.get('rawmaterials');
+  let canProduce = true;
+  const shortages = [];
+  (prod.bom||[]).forEach(b=>{
+    const m = mats.find(x=>x.id===b.matId);
+    const needed = b.qty * qty;
+    if (!m || m.qty < needed) { canProduce = false; shortages.push(`${m?m.name:'Unknown'} (need ${needed}, have ${m?m.qty:0})`); }
+  });
+  if (!canProduce) { toast('Insufficient stock: ' + shortages.join(', '),'error'); return; }
+  (prod.bom||[]).forEach(b=>{ const i=mats.findIndex(x=>x.id===b.matId); if(i>=0) mats[i].qty -= b.qty*qty; });
+  DB.set('rawmaterials', mats);
+  const prods = DB.get('products');
+  const pi = prods.findIndex(p=>p.id===prodId);
+  prods[pi].stock = (prods[pi].stock||0) + qty;
+  DB.set('products', prods);
+  const production = DB.get('production');
+  production.push({ id:DB.id(), date:document.getElementById('f-prdate').value, productId:prodId, qty, note:document.getElementById('f-prnote').value });
+  DB.set('production', production);
+  closeModal(); toast(`Produced ${qty} units! Stock updated.`); renderProduction();
+}
+function deleteProduction(id) {
+  confirmDelete('Delete this production record?', () => {
+    DB.set('production', DB.get('production').filter(p=>p.id!==id));
+    toast('Deleted'); navigate('production');
+  });
+}
+
+// ==================== CASH FLOW ====================
+function renderCashFlow() {
+  const cf = DB.get('cashflow');
+  const totalIn = cf.filter(x=>x.type==='in').reduce((a,b)=>a+b.amount,0);
+  const totalOut = cf.filter(x=>x.type==='out').reduce((a,b)=>a+b.amount,0);
+  const net = totalIn - totalOut;
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="kpi-grid grid-3col-kpi">
+      <div class="kpi green"><div class="kpi-label">Total Cash In</div><div class="kpi-val">${fmt(totalIn)}</div></div>
+      <div class="kpi red"><div class="kpi-label">Total Cash Out</div><div class="kpi-val">${fmt(totalOut)}</div></div>
+      <div class="kpi ${net>=0?'blue':'red'}"><div class="kpi-label">Net Position</div><div class="kpi-val">${fmt(net)}</div></div>
+    </div>
+    <div class="section-header">
+      <h3>Cash Transactions (${cf.length})</h3>
+      <button class="btn btn-primary" onclick="openCashFlowForm()">+ Add Entry</button>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <input type="text" id="cf-search" placeholder="Search category, ref, note…" oninput="filterCF()">
+        <input type="date" id="cf-from" onchange="filterCF()">
+        <input type="date" id="cf-to" onchange="filterCF()">
+        <select id="cf-type" onchange="filterCF()">
+          <option value="">All Types</option>
+          <option value="in">Cash In</option>
+          <option value="out">Cash Out</option>
+        </select>
+        <select id="cf-cat" onchange="filterCF()">
+          <option value="">All Categories</option>
+          <option>Customer Receipt</option><option>Supplier Payment</option><option>Salaries</option>
+          <option>Operational</option><option>Utilities</option><option>Transport</option><option>Daily Expenses</option><option>Other</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Reference</th><th>Amount</th><th>Note</th><th>Actions</th></tr></thead>
+        <tbody id="cf-tbody">
+          ${renderCFRows([...cf].sort((a,b)=>new Date(b.date)-new Date(a.date)))}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+function renderCFRows(cf) {
+  if (!cf.length) return '<tr><td colspan="7"><div class="empty"><div class="empty-icon">💰</div><p>No transactions found</p></div></td></tr>';
+  return cf.map(t=>`<tr>
+    <td>${dateStr(t.date)}</td>
+    <td><span class="tag ${t.type==='in'?'green':'red'}">${t.type==='in'?'↑ Cash In':'↓ Cash Out'}</span></td>
+    <td>${t.category}</td>
+    <td>${t.ref||'-'}</td>
+    <td class="num ${t.type==='in'?'text-green':'text-red'}">${t.type==='in'?'+':'-'}${fmt(t.amount)}</td>
+    <td class="text-muted">${t.note||'-'}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteCF('${t.id}')">Del</button></td>
+  </tr>`).join('');
+}
+function filterCF() {
+  let cf = [...DB.get('cashflow')].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const q = (document.getElementById('cf-search').value||'').toLowerCase();
+  const from = document.getElementById('cf-from').value;
+  const to = document.getElementById('cf-to').value;
+  const type = document.getElementById('cf-type').value;
+  const cat = document.getElementById('cf-cat').value;
+  if (q) cf = cf.filter(t=>(t.category||'').toLowerCase().includes(q)||(t.ref||'').toLowerCase().includes(q)||(t.note||'').toLowerCase().includes(q));
+  if (from) cf = cf.filter(t=>t.date>=from);
+  if (to) cf = cf.filter(t=>t.date<=to);
+  if (type) cf = cf.filter(t=>t.type===type);
+  if (cat) cf = cf.filter(t=>t.category===cat);
+  document.getElementById('cf-tbody').innerHTML = renderCFRows(cf);
+}
+function openCashFlowForm() {
+  openModal('Add Cash Entry', `
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input id="f-cfdate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label>Type</label><select id="f-cftype"><option value="in">Cash In (Receipt)</option><option value="out">Cash Out (Payment)</option></select></div>
+      <div class="form-group"><label>Category</label><select id="f-cfcat">
+        <option>Customer Receipt</option><option>Supplier Payment</option><option>Salaries</option>
+        <option>Operational</option><option>Utilities</option><option>Transport</option><option>Daily Expenses</option><option>Other</option>
+      </select></div>
+      <div class="form-group"><label>Amount (Rs.)</label><input id="f-cfamt" type="number" min="0" value="0"></div>
+      <div class="form-group"><label>Reference</label><input id="f-cfref" placeholder="Person/Company name"></div>
+      <div class="form-group"><label>Note</label><input id="f-cfnote" placeholder="Details..."></div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="saveCF()">Save Entry</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+function saveCF() {
+  const amt = parseFloat(document.getElementById('f-cfamt').value)||0;
+  if (!amt) { toast('Enter amount','error'); return; }
+  const cf = DB.get('cashflow');
+  cf.push({ id:DB.id(), date:document.getElementById('f-cfdate').value, type:document.getElementById('f-cftype').value, amount:amt, category:document.getElementById('f-cfcat').value, ref:document.getElementById('f-cfref').value, note:document.getElementById('f-cfnote').value });
+  DB.set('cashflow', cf);
+  closeModal(); toast('Entry saved!'); renderCashFlow();
+}
+function deleteCF(id) {
+  confirmDelete('Delete this cash entry?', () => {
+    DB.set('cashflow', DB.get('cashflow').filter(c=>c.id!==id));
+    toast('Deleted'); navigate('cashflow');
+  });
+}
+
+// ==================== SALARIES ====================
+function renderSalaries() {
+  const salaries = DB.get('salaries');
+  const totalMonthly = salaries.reduce((a,b)=>a+(b.monthlySalary||0),0);
+  const totalPaid = salaries.reduce((a,b)=>a+(b.totalPaid||0),0);
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="salary-summary">
+      <div class="ledger-stat"><div class="ls-label">Total Workers</div><div class="ls-val text-amber">${salaries.length}</div></div>
+      <div class="ledger-stat"><div class="ls-label">Monthly Payroll</div><div class="ls-val text-red">${fmt(totalMonthly)}</div></div>
+      <div class="ledger-stat"><div class="ls-label">Total Paid (All Time)</div><div class="ls-val text-green">${fmt(totalPaid)}</div></div>
+    </div>
+    <div class="section-header">
+      <h3>Workers & Salaries (${salaries.length})</h3>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" onclick="payMonthlyAll()">Pay All (This Month)</button>
+        <button class="btn btn-primary" onclick="openSalaryForm()">+ Add Worker</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Worker Name</th><th>Designation</th><th>Monthly Salary</th><th>Total Paid</th><th>Last Paid</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${salaries.length ? salaries.map(w=>`<tr>
+            <td><strong>${w.name}</strong></td>
+            <td>${w.designation||'-'}</td>
+            <td class="num text-amber">${fmt(w.monthlySalary)}</td>
+            <td class="num text-green">${fmt(w.totalPaid||0)}</td>
+            <td>${w.lastPaid ? dateStr(w.lastPaid) : '-'}</td>
+            <td><div class="action-row">
+              <button class="btn btn-success btn-sm" onclick="paySalary('${w.id}')">Pay Salary</button>
+              <button class="btn btn-outline btn-sm" onclick="openSalaryForm('${w.id}')">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteWorker('${w.id}')">Delete</button>
+            </div></td>
+          </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-icon">👷</div><p>No workers added yet</p></div></td></tr>'}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+function openSalaryForm(id) {
+  const w = id ? DB.get('salaries').find(x=>x.id===id) : null;
+  openModal(id?'Edit Worker':'Add Worker', `
+    <div class="form-grid">
+      <div class="form-group"><label>Worker Name</label><input id="f-wname" value="${w?w.name:''}" placeholder="Full name"></div>
+      <div class="form-group"><label>Designation</label><input id="f-wdes" value="${w?w.designation:''}" placeholder="e.g. Machine Operator"></div>
+      <div class="form-group"><label>Monthly Salary (Rs.)</label><input id="f-wsal" type="number" value="${w?w.monthlySalary:0}"></div>
+      <div class="form-group"><label>Phone</label><input id="f-wphone" value="${w?w.phone:''}" placeholder="0300-0000000"></div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="saveWorker('${id||''}')">Save</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+function saveWorker(id) {
+  const name = document.getElementById('f-wname').value.trim();
+  if (!name) { toast('Name required','error'); return; }
+  const salaries = DB.get('salaries');
+  const data = { name, designation:document.getElementById('f-wdes').value, monthlySalary:parseFloat(document.getElementById('f-wsal').value)||0, phone:document.getElementById('f-wphone').value };
+  if (id) { const i=salaries.findIndex(x=>x.id===id); salaries[i]={...salaries[i],...data}; }
+  else salaries.push({id:DB.id(), ...data, totalPaid:0, lastPaid:null});
+  DB.set('salaries', salaries);
+  closeModal(); toast('Worker saved!'); renderSalaries();
+}
+function paySalary(id) {
+  const w = DB.get('salaries').find(x=>x.id===id);
+  openModal(`Pay Salary: ${w.name}`, `
+    <div class="alert info">Monthly salary: <strong>${fmt(w.monthlySalary)}</strong></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Payment Date</label><input id="f-spdate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label>Amount (Rs.)</label><input id="f-spamt" type="number" value="${w.monthlySalary}"></div>
+      <div class="form-group full"><label>Note</label><input id="f-spnote" placeholder="e.g. March 2025 salary"></div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="confirmPaySalary('${id}')">Pay</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+function confirmPaySalary(id) {
+  const amt = parseFloat(document.getElementById('f-spamt').value)||0;
+  if (!amt) { toast('Enter amount','error'); return; }
+  const salaries = DB.get('salaries');
+  const i = salaries.findIndex(x=>x.id===id);
+  salaries[i].totalPaid = (salaries[i].totalPaid||0) + amt;
+  salaries[i].lastPaid = document.getElementById('f-spdate').value;
+  DB.set('salaries', salaries);
+  const cf = DB.get('cashflow');
+  cf.push({id:DB.id(), date:document.getElementById('f-spdate').value, type:'out', amount:amt, category:'Salaries', ref:salaries[i].name, note:document.getElementById('f-spnote').value||'Salary payment'});
+  DB.set('cashflow', cf);
+  closeModal(); toast('Salary paid!'); renderSalaries();
+}
+function payMonthlyAll() {
+  const salaries = DB.get('salaries');
+  if (!salaries.length) { toast('No workers added','error'); return; }
+  const total = salaries.reduce((a,b)=>a+(b.monthlySalary||0),0);
+  const today = new Date().toISOString().split('T')[0];
+  openModal('Pay All Salaries', `
+    <div class="alert warning">This will record salary payments for all <strong>${salaries.length} workers</strong>.</div>
+    <div style="padding:12px;background:var(--bg);border-radius:8px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between"><span>Total Payroll:</span><strong>${fmt(total)}</strong></div>
+    </div>
+    <div class="form-group"><label>Payment Date</label><input id="f-allpdate" type="date" value="${today}"></div>`,
+    `<button class="btn btn-primary" onclick="doPayAll()">Confirm Pay All</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+function doPayAll() {
+  const date = document.getElementById('f-allpdate').value;
+  const salaries = DB.get('salaries');
+  const cf = DB.get('cashflow');
+  salaries.forEach(w=>{
+    w.totalPaid = (w.totalPaid||0) + (w.monthlySalary||0);
+    w.lastPaid = date;
+    cf.push({id:DB.id(), date, type:'out', amount:w.monthlySalary||0, category:'Salaries', ref:w.name, note:'Monthly salary'});
+  });
+  DB.set('salaries', salaries);
+  DB.set('cashflow', cf);
+  closeModal(); toast('All salaries paid!'); renderSalaries();
+}
+function deleteWorker(id) {
+  confirmDelete('Delete this worker record?', () => {
+    DB.set('salaries', DB.get('salaries').filter(x=>x.id!==id));
+    toast('Deleted'); navigate('salaries');
+  });
+}
+
+// ==================== DAILY EXPENSES ====================
+function renderDailyExpenses() {
+  const cf = DB.get('cashflow');
+  const expenses = cf.filter(c=>c.type==='out').sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayExp = expenses.filter(e=>e.date===todayStr).reduce((a,b)=>a+b.amount,0);
+  const monthStr = todayStr.slice(0,7);
+  const monthExp = expenses.filter(e=>(e.date||'').startsWith(monthStr)).reduce((a,b)=>a+b.amount,0);
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="kpi-grid grid-3col-kpi" style="margin-bottom:20px;">
+      <div class="kpi red"><div class="kpi-label">Today's Expenses</div><div class="kpi-val">${fmt(todayExp)}</div><div class="kpi-sub">${expenses.filter(e=>e.date===todayStr).length} entries</div></div>
+      <div class="kpi amber"><div class="kpi-label">This Month</div><div class="kpi-val">${fmt(monthExp)}</div><div class="kpi-sub">Monthly total</div></div>
+      <div class="kpi blue"><div class="kpi-label">All-time Expenses</div><div class="kpi-val">${fmt(expenses.reduce((a,b)=>a+b.amount,0))}</div><div class="kpi-sub">${expenses.length} entries</div></div>
+    </div>
+    <div class="section-header">
+      <h3>Daily Expenses Log</h3>
+      <button class="btn btn-primary" onclick="openDailyExpenseForm()">+ Add Daily Expense</button>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <input type="text" id="dexp-search" placeholder="Search description, category…" oninput="filterDailyExpenses()">
+        <input type="date" id="dexp-from" onchange="filterDailyExpenses()" placeholder="From">
+        <input type="date" id="dexp-to" onchange="filterDailyExpenses()" placeholder="To">
+        <select id="dexp-cat" onchange="filterDailyExpenses()">
+          <option value="">All Categories</option>
+          ${['Operational','Utilities','Transport','Daily Expenses','Other','Salaries'].map(cat=>`<option value="${cat}">${cat}</option>`).join('')}
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Actions</th></tr></thead>
+        <tbody id="dexp-tbody">${renderDailyExpenseRows(expenses)}</tbody>
+      </table></div>
+    </div>`;
+}
+function renderDailyExpenseRows(expenses) {
+  if (!expenses.length) return '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">No expenses yet</td></tr>';
+  return expenses.map(e=>`<tr>
+    <td>${dateStr(e.date)}</td>
+    <td><span class="tag red">${e.category||'Other'}</span></td>
+    <td>${e.note||e.ref||'-'}</td>
+    <td class="num text-red">${fmt(e.amount)}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteDailyExpense('${e.id}')">Delete</button></td>
+  </tr>`).join('');
+}
+function filterDailyExpenses() {
+  const q = (document.getElementById('dexp-search').value||'').toLowerCase();
+  const from = document.getElementById('dexp-from').value;
+  const to = document.getElementById('dexp-to').value;
+  const cat = document.getElementById('dexp-cat').value;
+  let expenses = DB.get('cashflow').filter(c=>c.type==='out').sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if (q) expenses = expenses.filter(e=>(e.note||'').toLowerCase().includes(q)||(e.category||'').toLowerCase().includes(q)||(e.ref||'').toLowerCase().includes(q));
+  if (from) expenses = expenses.filter(e=>e.date>=from);
+  if (to) expenses = expenses.filter(e=>e.date<=to);
+  if (cat) expenses = expenses.filter(e=>e.category===cat);
+  document.getElementById('dexp-tbody').innerHTML = renderDailyExpenseRows(expenses);
+}
+function openDailyExpenseForm() {
+  openModal('Add Daily Expense', `
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input id="f-dexp-date" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label>Category</label>
+        <select id="f-dexp-cat">
+          <option>Daily Expenses</option><option>Operational</option><option>Utilities</option><option>Transport</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Amount (Rs.)</label><input id="f-dexp-amt" type="number" min="0" placeholder="0"></div>
+      <div class="form-group"><label>Description / Note</label><input id="f-dexp-note" placeholder="e.g. Electricity bill, tea, rent…"></div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="saveDailyExpense()">Save Expense</button>
+     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>`
+  );
+}
+function saveDailyExpense() {
+  const amt = parseFloat(document.getElementById('f-dexp-amt').value)||0;
+  if (!amt) { toast('Enter an amount','error'); return; }
+  const cf = DB.get('cashflow');
+  cf.push({id:DB.id(), date:document.getElementById('f-dexp-date').value, type:'out', amount:amt, category:document.getElementById('f-dexp-cat').value, ref:'Daily Expense', note:document.getElementById('f-dexp-note').value});
+  DB.set('cashflow', cf);
+  closeModal(); toast('Expense recorded!'); renderDailyExpenses();
+}
+function deleteDailyExpense(id) {
+  confirmDelete('Delete this expense?', ()=>{ DB.set('cashflow', DB.get('cashflow').filter(c=>c.id!==id)); toast('Deleted'); renderDailyExpenses(); });
+}
+
+// ==================== LEDGER EXPORT/PRINT ====================
+function exportLedgerCSV(type, id) {
+  let rows, filename, headers;
+  if (type==='supplier') {
+    const sup = DB.get('suppliers').find(s=>s.id===id);
+    const purchases = DB.get('purchases').filter(p=>p.supplierId===id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    headers = ['PO No.','Date','Type','Debit (Purchase)','Credit (Payment)','Running Balance'];
+    let runBal=0, data=[];
+    purchases.forEach(p=>{
+      runBal+=p.total;
+      data.push([p.uid||'-', p.date, 'Purchase', p.total, '', runBal]);
+      if(p.paid>0){ runBal-=p.paid; data.push([p.uid||'-', p.date, 'Payment', '', p.paid, runBal]); }
+    });
+    rows=data; filename=`Ledger_${(sup||{name:'Supplier'}).name.replace(/\s+/g,'_')}.csv`;
+  } else {
+    const cust = DB.get('customers').find(c=>c.id===id);
+    const sales = DB.get('sales').filter(s=>s.customerId===id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    headers = ['Bill No.','Date','Invoice Total','Amount Received','Running Balance'];
+    let runBal=0, data=[];
+    sales.forEach(s=>{ runBal+=(s.total-s.paid); data.push([s.uid||'-', s.date, s.total, s.paid, runBal]); });
+    rows=data; filename=`Ledger_${(cust||{name:'Customer'}).name.replace(/\s+/g,'_')}.csv`;
+  }
+  const csv = [headers, ...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('
+');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
+  toast('Ledger exported as CSV!');
+}
+function printLedger(type, id) {
+  let html='', title='';
+  if (type==='supplier') {
+    const sup = DB.get('suppliers').find(s=>s.id===id);
+    const purchases = DB.get('purchases').filter(p=>p.supplierId===id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const totalPurchased=purchases.reduce((a,b)=>a+b.total,0), totalPaid=purchases.reduce((a,b)=>a+b.paid,0);
+    title=`Supplier Ledger: ${sup?sup.name:'-'}`;
+    let runBal=0, rows='';
+    purchases.forEach(p=>{
+      runBal+=p.total;
+      rows+=`<tr><td>${p.uid||'-'}</td><td>${dateStr(p.date)}</td><td>Purchase</td><td>Rs. ${p.total.toLocaleString()}</td><td>—</td><td>Rs. ${runBal.toLocaleString()}</td></tr>`;
+      if(p.paid>0){ runBal-=p.paid; rows+=`<tr><td>${p.uid||'-'}</td><td>${dateStr(p.date)}</td><td>Payment</td><td>—</td><td>Rs. ${p.paid.toLocaleString()}</td><td>Rs. ${runBal.toLocaleString()}</td></tr>`; }
+    });
+    html=`<h2>${title}</h2><p style="color:#555;margin-bottom:12px">Total Purchased: Rs. ${totalPurchased.toLocaleString()} | Total Paid: Rs. ${totalPaid.toLocaleString()} | Balance: Rs. ${(totalPurchased-totalPaid).toLocaleString()}</p><table border="1" cellpadding="7" cellspacing="0" style="width:100%;border-collapse:collapse"><thead style="background:#1a1a2e;color:#fff"><tr><th>PO No.</th><th>Date</th><th>Type</th><th>Debit</th><th>Credit</th><th>Balance</th></tr></thead><tbody>${rows}</tbody></table>`;
+  } else {
+    const cust = DB.get('customers').find(c=>c.id===id);
+    const sales = DB.get('sales').filter(s=>s.customerId===id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const totalSold=sales.reduce((a,b)=>a+b.total,0), totalRec=sales.reduce((a,b)=>a+b.paid,0);
+    title=`Customer Ledger: ${cust?cust.name:'-'}`;
+    let runBal=0, rows='';
+    sales.forEach(s=>{ runBal+=(s.total-s.paid); rows+=`<tr><td>${s.uid||'-'}</td><td>${dateStr(s.date)}</td><td>Rs. ${s.total.toLocaleString()}</td><td>Rs. ${s.paid.toLocaleString()}</td><td>Rs. ${runBal.toLocaleString()}</td></tr>`; });
+    html=`<h2>${title}</h2><p style="color:#555;margin-bottom:12px">Total Sales: Rs. ${totalSold.toLocaleString()} | Received: Rs. ${totalRec.toLocaleString()} | Balance: Rs. ${(totalSold-totalRec).toLocaleString()}</p><table border="1" cellpadding="7" cellspacing="0" style="width:100%;border-collapse:collapse"><thead style="background:#1a1a2e;color:#fff"><tr><th>Bill No.</th><th>Date</th><th>Invoice Total</th><th>Received</th><th>Balance</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  const win = window.open('','_blank','width=900,height=700');
+  win.document.write(`<!DOCTYPE html><html><head><title>${title}</title><style>body{font-family:Arial,sans-serif;padding:24px;font-size:13px}h2{margin-bottom:8px}td,th{padding:7px 10px}thead th{color:#fff}</style></head><body><div style="text-align:center;margin-bottom:20px"><strong style="font-size:18px;color:#1a1a2e">AK Copy House Multan</strong><br><span style="font-size:12px;color:#555">Printed on ${new Date().toLocaleDateString('en-PK')}</span></div>${html}<div style="margin-top:20px;font-size:11px;color:#888;text-align:center">This is a computer-generated ledger statement.</div></body></html>`);
+  win.document.close(); win.print();
+}
+
+// ==================== REPORTS ====================
+function renderReports() {
+  const sales = DB.get('sales'), purchases = DB.get('purchases');
+  const cf = DB.get('cashflow'), suppliers = DB.get('suppliers'), customers = DB.get('customers');
+  const prods = DB.get('products'), mats = DB.get('rawmaterials');
+  const salaries = DB.get('salaries');
+
+  const totalSales = sales.reduce((a,b)=>a+b.total,0);
+  const totalPurchases = purchases.reduce((a,b)=>a+b.total,0);
+  const totalIn = cf.filter(x=>x.type==='in').reduce((a,b)=>a+b.amount,0);
+  const totalOut = cf.filter(x=>x.type==='out').reduce((a,b)=>a+b.amount,0);
+  const grossProfit = totalSales - totalPurchases;
+  const netProfit = totalIn - totalOut;
+  const totalPayroll = salaries.reduce((a,b)=>a+(b.monthlySalary||0),0);
+
+  // Monthly breakdown
+  const now = new Date();
+  const months = [];
+  for (let i=5; i>=0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    months.push({ key, label: d.toLocaleString('en-GB',{month:'short',year:'numeric'}) });
+  }
+
+  const c = document.getElementById('content');
+
+  // Date filter for reports
+  const filterHtml = `
+    <div class="card" style="margin-bottom:20px">
+      <div class="filter-bar">
+        <label style="color:var(--muted);font-size:12px;text-transform:none;letter-spacing:0">Filter Period:</label>
+        <input type="date" id="rpt-from" onchange="reRenderSummary()">
+        <input type="date" id="rpt-to" onchange="reRenderSummary()">
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('rpt-from').value='';document.getElementById('rpt-to').value='';reRenderSummary()">Clear Filter</button>
+      </div>
+    </div>`;
+
+  c.innerHTML = filterHtml + `<div id="rpt-content"></div>`;
+  renderReportContent(sales, purchases, cf, suppliers, customers, prods, mats, salaries);
+}
+function reRenderSummary() {
+  const from = document.getElementById('rpt-from').value;
+  const to = document.getElementById('rpt-to').value;
+  let sales = DB.get('sales'), purchases = DB.get('purchases'), cf = DB.get('cashflow');
+  if (from) { sales=sales.filter(s=>s.date>=from); purchases=purchases.filter(p=>p.date>=from); cf=cf.filter(t=>t.date>=from); }
+  if (to) { sales=sales.filter(s=>s.date<=to); purchases=purchases.filter(p=>p.date<=to); cf=cf.filter(t=>t.date<=to); }
+  renderReportContent(sales, purchases, cf, DB.get('suppliers'), DB.get('customers'), DB.get('products'), DB.get('rawmaterials'), DB.get('salaries'));
+}
+function renderReportContent(sales, purchases, cf, suppliers, customers, prods, mats, salaries) {
+  const totalSales = sales.reduce((a,b)=>a+b.total,0);
+  const totalPurchases = purchases.reduce((a,b)=>a+b.total,0);
+  const totalIn = cf.filter(x=>x.type==='in').reduce((a,b)=>a+b.amount,0);
+  const totalOut = cf.filter(x=>x.type==='out').reduce((a,b)=>a+b.amount,0);
+  const grossProfit = totalSales - totalPurchases;
+  const netProfit = totalIn - totalOut;
+
+  document.getElementById('rpt-content').innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi amber"><div class="kpi-label">Total Revenue</div><div class="kpi-val">${fmt(totalSales)}</div><div class="kpi-sub">All sales</div></div>
+      <div class="kpi blue"><div class="kpi-label">Total COGS</div><div class="kpi-val">${fmt(totalPurchases)}</div><div class="kpi-sub">All purchases</div></div>
+      <div class="kpi green"><div class="kpi-label">Gross Profit</div><div class="kpi-val">${fmt(grossProfit)}</div><div class="kpi-sub">${Math.round((grossProfit/Math.max(totalSales,1))*100)}% margin</div></div>
+      <div class="kpi ${netProfit>=0?'green':'red'}"><div class="kpi-label">Net Cash Flow</div><div class="kpi-val">${fmt(netProfit)}</div><div class="kpi-sub">Cash position</div></div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="card">
+        <div class="card-header"><h4>Supplier Balances (Payable)</h4></div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Supplier</th><th>Balance</th></tr></thead>
+        <tbody>${suppliers.map(s=>`<tr><td><span class="id-badge">${s.uid||'-'}</span></td><td>${s.name}</td><td class="num text-red">${fmt(s.balance)}</td></tr>`).join('')}</tbody>
+        <tfoot><tr><td colspan="2" style="padding:10px 14px;border-top:1px solid var(--border);font-weight:700">Total</td><td style="padding:10px 14px;border-top:1px solid var(--border)" class="num text-red">${fmt(suppliers.reduce((a,b)=>a+(b.balance||0),0))}</td></tr></tfoot>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h4>Customer Balances (Receivable)</h4></div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Customer</th><th>Balance</th></tr></thead>
+        <tbody>${customers.map(cu=>`<tr><td><span class="id-badge">${cu.uid||'-'}</span></td><td>${cu.name}</td><td class="num text-green">${fmt(cu.balance)}</td></tr>`).join('')}</tbody>
+        <tfoot><tr><td colspan="2" style="padding:10px 14px;border-top:1px solid var(--border);font-weight:700">Total</td><td style="padding:10px 14px;border-top:1px solid var(--border)" class="num text-green">${fmt(customers.reduce((a,b)=>a+(b.balance||0),0))}</td></tr></tfoot>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="card">
+        <div class="card-header"><h4>Raw Materials Inventory</h4></div>
+        <div class="table-wrap"><table><thead><tr><th>Material</th><th>Stock</th><th>Status</th></tr></thead>
+        <tbody>${mats.map(m=>`<tr><td>${m.name}</td><td class="num">${fmtNum(m.qty)} ${m.unit}</td><td><span class="tag ${m.qty<=m.reorderLevel?'red':m.qty<=m.reorderLevel*1.5?'amber':'green'}">${m.qty<=m.reorderLevel?'Low':'OK'}</span></td></tr>`).join('')}</tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h4>Finished Goods Stock</h4></div>
+        <div class="table-wrap"><table><thead><tr><th>Product</th><th>Stock</th><th>Value</th></tr></thead>
+        <tbody>${prods.map(p=>`<tr><td>${p.name}</td><td class="num">${fmtNum(p.stock||0)}</td><td class="num">${fmt((p.stock||0)*p.sellingPrice)}</td></tr>`).join('')}</tbody>
+        <tfoot><tr><td style="padding:10px 14px;border-top:1px solid var(--border);font-weight:700">Total Stock Value</td><td></td><td style="padding:10px 14px;border-top:1px solid var(--border)" class="num text-amber">${fmt(prods.reduce((a,p)=>a+(p.stock||0)*p.sellingPrice,0))}</td></tr></tfoot>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h4>Cash Flow by Category</h4></div>
+      <div class="table-wrap"><table><thead><tr><th>Category</th><th>Total In</th><th>Total Out</th><th>Net</th></tr></thead>
+      <tbody>
+        ${['Customer Receipt','Supplier Payment','Salaries','Operational','Utilities','Transport','Daily Expenses','Other'].map(cat=>{
+          const ins = cf.filter(x=>x.category===cat&&x.type==='in').reduce((a,b)=>a+b.amount,0);
+          const outs = cf.filter(x=>x.category===cat&&x.type==='out').reduce((a,b)=>a+b.amount,0);
+          if (!ins && !outs) return '';
+          const net2 = ins - outs;
+          return `<tr><td>${cat}</td><td class="num text-green">${ins?fmt(ins):'-'}</td><td class="num text-red">${outs?fmt(outs):'-'}</td><td class="num ${net2>=0?'text-green':'text-red'}">${fmt(net2)}</td></tr>`;
+        }).join('')}
+      </tbody></table></div>
+    </div>`;
+}
+
+// ==================== EXPORT ====================
+function exportData() {
+  const wb = XLSX.utils.book_new();
+  const suppliers = DB.get('suppliers');
+  const customers = DB.get('customers');
+  const mats = DB.get('rawmaterials');
+  const prods = DB.get('products');
+  const purchases = DB.get('purchases');
+  const sales = DB.get('sales');
+  const cf = DB.get('cashflow');
+  const salaries = DB.get('salaries');
+
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(suppliers.map(s=>({'ID':s.uid||'','Name':s.name,'Phone':s.phone,'City':s.city||'','Balance Payable (Rs.)':s.balance||0}))), 'Suppliers');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(customers.map(c=>({'ID':c.uid||'','Name':c.name,'Phone':c.phone,'City':c.city||'','Balance Receivable (Rs.)':c.balance||0}))), 'Customers');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(mats.map(m=>({'ID':m.uid||'','Name':m.name,'Unit':m.unit,'Stock':m.qty,'Reorder Level':m.reorderLevel,'Cost/Unit (Rs.)':m.costPrice,'Status':m.qty<=m.reorderLevel?'LOW STOCK':'OK'}))), 'Raw Materials');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prods.map(p=>({'ID':p.uid||'','Name':p.name,'Price':p.sellingPrice,'Stock':p.stock||0,'Stock Value':((p.stock||0)*p.sellingPrice)}))), 'Products');
+
+  const slRows = [];
+  sales.forEach(s=>{ const cust=customers.find(c=>c.id===s.customerId); s.items.forEach((it,idx)=>{ const prod=prods.find(x=>x.id===it.prodId); slRows.push({'Bill No':idx===0?s.uid:'','Date':s.date,'Customer':idx===0?(cust?cust.name:''):'','Product':prod?prod.name:'','Qty':it.qty,'Rate':it.rate,'Line Total':it.qty*it.rate,'Invoice Total':idx===0?s.total:'','Received':idx===0?s.paid:'','Balance':idx===0?s.total-s.paid:''}); }); });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(slRows.length?slRows:[{}]), 'Sales');
+
+  const puRows = [];
+  purchases.forEach(p=>{ const sup=suppliers.find(s=>s.id===p.supplierId); p.items.forEach((it,idx)=>{ const m=mats.find(x=>x.id===it.matId); puRows.push({'Date':p.date,'Supplier':idx===0?(sup?sup.name:''):'','Material':m?m.name:'','Qty':it.qty,'Rate':it.rate,'Line Total':it.qty*it.rate,'Order Total':idx===0?p.total:'','Paid':idx===0?p.paid:'','Balance':idx===0?p.total-p.paid:''}); }); });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(puRows.length?puRows:[{}]), 'Purchases');
+
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([...cf].sort((a,b)=>new Date(a.date)-new Date(b.date)).map(t=>({'Date':t.date,'Type':t.type==='in'?'Cash In':'Cash Out','Category':t.category,'Reference':t.ref||'','Amount':t.amount,'Note':t.note||''}))), 'Cash Flow');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(salaries.map(w=>({'Name':w.name,'Designation':w.designation||'','Monthly Salary':w.monthlySalary,'Total Paid':w.totalPaid||0,'Last Paid':w.lastPaid||''}))), 'Salaries');
+
+  XLSX.writeFile(wb, `AKCopyHouse_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+  toast('Excel exported to Downloads folder.');
+}
+
+// ==================== SIDEBAR ====================
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// ==================== INIT ====================
+async function init() {
+  try {
+    const res = await fetch(API_BASE + '/auth/me', { credentials: 'include' });
+    if (!res.ok) { showLogin(); return; }
+    const data = await res.json();
+    window._currentUser = data.user;
+    document.getElementById('user-badge').textContent = data.user.username + ' (' + data.user.role + ')';
+  } catch(e) { showLogin(); return; }
+  showLoading(true);
+  await DB.init();
+  showLoading(false);
+  render();
+}
+function showLoading(on) {
+  const el = document.getElementById('app-loading');
+  if (el) el.style.display = on ? 'flex' : 'none';
+}
+init();
+
+function showLogin() {
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+function hideLogin() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'flex';
+}
+async function doLogin() {
+  const username = document.getElementById('login-user').value.trim();
+  const password = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-err');
+  const btn = document.getElementById('login-btn');
+  if (!username || !password) { errEl.textContent = 'Enter username and password'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  errEl.textContent = '';
+  try {
+    const res = await fetch(API_BASE + '/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body:JSON.stringify({username, password}) });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Login failed'; return; }
+    window._currentUser = data.user;
+    document.getElementById('user-badge').textContent = data.user.username + ' (' + data.user.role + ')';
+    hideLogin();
+    showLoading(true);
+    await DB.init();
+    showLoading(false);
+    render();
+  } catch(e) {
+    errEl.textContent = 'Connection error. Is the server running?';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+async function doLogout() {
+  await fetch(API_BASE + '/auth/logout', { method:'POST', credentials:'include' });
+  window._currentUser = null;
+  DB._cache = {};
+  showLogin();
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display === 'flex') { doLogin(); }
+});
+</script>
+</div>
+</body>
+</html>
