@@ -1,0 +1,1 @@
+# waraq-inventory-managment
